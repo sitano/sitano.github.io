@@ -1,12 +1,24 @@
-destination: ./_site
-auto:        true
-lsi:         false
-server_port: 4000
-pygments:    true
-markdown:    kramdown
-permalink:   date
-maruku:
-  use_tex:    false
-  use_divs:   false
-  png_dir:    images/latex
-  png_url:    /images/latex
+# Dependencies
+markdown:         redcarpet
+pygments:         true
+
+# Permalinks
+permalink:        pretty
+
+# Setup
+title:            'Ivan Prisyazhniy'
+tagline:          '<a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a> backend system engineer'
+description:      'Made by <a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a>.'
+Url:              http://sitano.github.io
+baseurl:          '/'
+paginate:         5
+
+author:
+  name:           'Ivan Prisyazhniy'
+  url:            https://twitter.com/JohnKoepi
+
+# Custom vars
+version:          1.0.0
+
+github:
+  repo:           https://github.com/sitano
