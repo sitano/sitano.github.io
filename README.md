@@ -1,3 +1,10 @@
+## TODO
+
+- GA
+- Comments
+- Octopress
+- Articles Confluence
+
 ## Author
 
 **Ivan Prisyazhniy**

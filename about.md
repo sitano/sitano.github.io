@@ -39,3 +39,5 @@ You can find me at:
 Have questions or suggestions? Feel free to [ask me on Twitter](https://twitter.com/JohnKoepi).
 
 Thanks for reading!
+
+{% include analytics %}

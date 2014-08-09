@@ -9,13 +9,23 @@ permalink:        pretty
 title:            'Ivan Prisyazhniy'
 tagline:          '<a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a> backend system engineer'
 description:      'Made by <a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a>.'
-Url:              http://sitano.github.io
+url:              http://sitano.github.io
 baseurl:          '/'
 paginate:         5
 
 author:
   name:           'Ivan Prisyazhniy'
   url:            https://twitter.com/JohnKoepi
+
+analytics:
+  provider: google
+  google:
+    tracking_id: 'UA-53659396-1'
+
+comments:
+  provider: disqus
+  disqus:
+    short_name: 'sitanogithubio'
 
 # Custom vars
 version:          1.0.0
