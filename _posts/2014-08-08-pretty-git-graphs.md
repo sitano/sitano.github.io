@@ -21,7 +21,7 @@ Is there any tool that can make high-quality printable images of git history?
 
 ![wow]({{ Site.url }}/public/git-lg1.png)
 
-and git lg2 looks like this:
+and `git lg2` looks like this:
 
 ![wow]({{ Site.url }}/public/git-lg2.png)
 
