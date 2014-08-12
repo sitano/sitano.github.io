@@ -6,8 +6,8 @@ highlighter:      true
 permalink:        pretty
 
 # Setup
-title:            'Ivan Prisyazhniy'
-tagline:          '<a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a> backend system engineer'
+title:            '@JohnKoepi'
+tagline:          'backend system engineer'
 description:      'Made by <a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a>.'
 url:              http://sitano.github.io
 baseurl:          '/'
