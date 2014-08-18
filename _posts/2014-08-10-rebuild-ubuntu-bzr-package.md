@@ -19,20 +19,16 @@ Note: Since Ubuntu 11.10 “Oneiric Ocelot” (or if you have Backports enabled 
 
     $ sudo apt-get install packaging-dev
 
-Create your GPG key
-
-    $ gpg --gen-key
-    $ gpg --send-keys --keyserver keyserver.ubuntu.com <KEY ID>
-
-Create your SSH key
-
-    $ ssh-keygen -t rsa
-
-Set up pbuilder
+Set up pbuilder environment
 
     $ pbuilder-dist <release> create
 
-Upload your GPG key to Launchpad
+### Create your GPG/SSH keys
+
+    $ gpg --gen-key
+    $ ssh-keygen -t rsa
+
+### Upload your GPG/SSH pub keys to Launchpad
 
 To find about your GPG fingerprint, run:
 
@@ -51,7 +47,7 @@ Then run this command to submit your key to Ubuntu keyserver:
 
 where `43CDE61D` should be replaced by your key ID (which is in the first line of output of the previous command). Now you can import your key to Launchpad.
 
-Upload your SSH key to Launchpad
+### Upload your SSH key to Launchpad
 
 Configure Bazaar
 
@@ -96,20 +92,28 @@ In Precise, a quick and dirty fix is to edit the file `/usr/bin/pbuilder-dist` ,
 
 [http://packaging.ubuntu.com/html/udd-working.html](http://packaging.ubuntu.com/html/udd-working.html)
 
+Make working copy of upstream branch
+
     $ bzr branch memcached.dev 1.4.18-0ubuntu1
     $ cd 1.4.18-0ubuntu1
 
-Copy new source into dir. Fix debian/watch:
+Update source files.
 
-{% highlight bash %}
-version=3
-opts=\
-downloadurlmangle=s|.*[?]name=(.*?)&.*|http://www.memcached.org/files/$1|,\
-filenamemangle=s|[^/]+[?]name=(.*?)&.*|$1| \
-http://www.memcached.org/files/memcached-([0-9.]+).tar.gz.*
-{% endhighlight %}
+Fix debian/watch:
 
-Remove old patch debian/patches/60_fix_racey_test.patch and fix patches series file
+    version=3
+    opts=\
+    downloadurlmangle=s|.*[?]name=(.*?)&.*|http://www.memcached.org/files/$1|,\
+    filenamemangle=s|[^/]+[?]name=(.*?)&.*|$1| \
+    http://www.memcached.org/files/memcached-([0-9.]+).tar.gz.*
+
+Remove old patch `debian/patches/60_fix_racey_test.patch` 
+
+Fix `series` file
+
+Regenerate `configure`
+
+Update doc/Makefile
 
 ### Commit changes
 
@@ -118,11 +122,29 @@ Remove old patch debian/patches/60_fix_racey_test.patch and fix patches series f
     $ dch -i
     $ bzr commit
 
-A hook in bzr-builddeb will use the debian/changelog text as the commit message and set the tag to mark bug #12345 as fixed.
+A hook in `bzr-builddeb` will use the `debian/changelog` text as the commit message and set the tag to mark bug _#12345_ as fixed.
 
-This only works with bzr-builddeb 2.7.5 and bzr 2.4, for older versions use debcommit.
+This only works with `bzr-builddeb 2.7.5` and `bzr 2.4`, for older versions use `debcommit`.
 
 ### Rebuild package
 
     $ bzr builddeb -S
     $ pbuilder-dist precise build ../memcached_1.4.18-0ubuntu1.dsc
+
+You can test new package. It can be found at
+
+    $ dpkg -I ~/pbuilder/*_result/memcached_*.deb
+
+### Push update into launchpad
+
+To push it to Launchpad, as the remote branch name, you need to stick to the following nomenclature:
+
+    lp:~<yourlpid>/ubuntu/<release>/<package>/<branchname>
+
+This could for example be:
+
+    lp:~john-koepi/ubuntu/precise/memcached/memcached.dev
+
+So if you just run:
+
+    $ bzr push lp:~john-koepi/ubuntu/precise/memcached/memcached.dev
