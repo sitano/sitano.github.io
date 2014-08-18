@@ -148,3 +148,10 @@ This could for example be:
 So if you just run:
 
     $ bzr push lp:~john-koepi/ubuntu/precise/memcached/memcached.dev
+
+### Uploading packages to this PPA
+
+You can upload packages to this PPA using:
+
+    $ dput ppa:john-koepi/common <source.changes>
+
