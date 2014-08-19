@@ -155,3 +155,17 @@ You can upload packages to this PPA using:
 
     $ dput ppa:john-koepi/common <source.changes>
 
+### Multi-distribution PPA upload path
+
+[Support new multi-distribution PPA upload path](https://bugs.launchpad.net/ubuntu/+source/dput/+bug/1340130)
+
+Since http://bazaar.launchpad.net/+branch/launchpad/revision/17093, 
+Launchpad has supported a new form for the PPA upload path, 
+~<person>/<distro>/<ppa>. </ppa></distro></person>
+
+[PPA & Packaging: Having versions of packages for multiple distros](http://askubuntu.com/questions/30145/ppa-packaging-having-versions-of-packages-for-multiple-distros)
+
+Probably the easiest way is to simply copy the binaries on Launchpad or
+use another name. 
+
+For example: `nginx (1:1.4.1-0ubuntu1~preciseppa1) precise; urgency=low`
