@@ -166,6 +166,19 @@ Launchpad has supported a new form for the PPA upload path,
 [PPA & Packaging: Having versions of packages for multiple distros](http://askubuntu.com/questions/30145/ppa-packaging-having-versions-of-packages-for-multiple-distros)
 
 Probably the easiest way is to simply copy the binaries on Launchpad or
-use another name. 
+use another name.
 
-For example: `nginx (1:1.4.1-0ubuntu1~preciseppa1) precise; urgency=low`
+For example:
+
+    nginx (1:1.4.1-0ubuntu1~preciseppa1) precise; urgency=low
+
+Whether to use debuild -S -sd or debuild -S -sa is really a different question,
+but here’s a brief answer.
+
+-sa ensures that the .orig.tar.bz2 will be uploaded. If you haven’t made an
+upload of this upstream version before, use this.
+
+-sd explicitly makes it so that only the debian.tar.gz or diff.tar.gz are uploaded.
+This is for when you are making a change to an upstream version that is already
+available in you target archive or PPA. This is because th original tarball
+should already be present there.
