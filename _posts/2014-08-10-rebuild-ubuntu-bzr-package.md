@@ -172,6 +172,10 @@ For example:
 
     nginx (1:1.4.1-0ubuntu1~preciseppa1) precise; urgency=low
 
+To match memcached `watch` file you should use:
+
+    memcached (1.4.20-0precise1) precise; urgency=low
+
 Whether to use debuild -S -sd or debuild -S -sa is really a different question,
 but here’s a brief answer.
 
