@@ -14,7 +14,7 @@ every 10-30 minutes + some other services installed. There is 48 gigs of memory 
 It’s NUMA architecture, 2 cpus => 2 mem banks, 10/21 memory bank access,
 default policy = local, all processes not pinned start at first mem socket.
 
-Server is configured with:
+Server is `Ubuntu 12.04.3 LTS` with kernel `Linux 3.2.0-24-generic #37-Ubuntu SMP x86\_64`
 
     vm.swappiness = 0
     vm.zone_reclaim_mode = 0
