@@ -1,6 +1,6 @@
 ---
 layout: post
-title: How vm.zone_reclam_mode = 0 looks like?
+title: How vm.zone_reclaim_mode = 0 looks like?
 ---
 
 We hit a problem on our production servers. It looks like this:
@@ -24,7 +24,7 @@ of free memory owned by the buffer cache.
 Why is that happening?
 
 Take a look at a description of
-[vm.zone\_reclam\_mode](https://www.kernel.org/doc/Documentation/sysctl/vm.txt)
+[vm.zone\_reclaim\_mode](https://www.kernel.org/doc/Documentation/sysctl/vm.txt)
 parameter.
 
 **zone\_reclaim\_mode**:
