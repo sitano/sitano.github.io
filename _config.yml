@@ -1,6 +1,6 @@
 # Dependencies
 markdown:         redcarpet
-highlighter:      true
+highlighter:      pygments
 
 # Permalinks
 permalink:        pretty
@@ -14,7 +14,7 @@ baseurl:          '/'
 paginate:         5
 
 author:
-  name:           'Ivan Prisyazhniy'
+  name:           'Ivan Prisyazhnyy'
   url:            https://twitter.com/JohnKoepi
 
 analytics:

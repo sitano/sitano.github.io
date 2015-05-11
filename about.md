@@ -3,7 +3,7 @@ layout: page
 title: About
 ---
 
-### Hey there! My name is Ivan Prisyazhniy.
+### Hey there! My name is Ivan Prisyazhnyy.
 
 I am backend system engineer.
 I like distributed systems (i.e. raft/paxos/vc/...) and linux.
