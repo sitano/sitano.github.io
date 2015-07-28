@@ -57,3 +57,4 @@ Team
 ====
 
 25. How big is your team?
+26. How do you resolve conflicts with a team members?
