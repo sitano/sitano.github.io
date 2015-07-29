@@ -22,6 +22,7 @@ Here i write my own thoughts.
 * [Radio-T](http://www.radio-t.com/)
 * [DevZen](http://devzen.ru/)
 * [CTO cast](http://ctocast.com/)
+* [RadioJS about FrontEnd and a lot of buzz words included](http://radiojs.ru/)
 * [the ChangeLog](https://changelog.com/)
 * [Pragmatic](https://pragprog.com/podcasts)
 * [FLOSS](https://twit.tv/shows/floss-weekly)
