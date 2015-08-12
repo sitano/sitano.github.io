@@ -5,13 +5,13 @@ title: About
 
 ### Hey there! My name is Ivan Prisyazhnyy.
 
-Backend system engineer. 
+Backend system engineer.
 
 I like distributed systems (i.e. raft/paxos/vc/...) and nixes.
 I am twitter/facebook/google/amazon OSS fan. I work primarily with Linux/Java/JS/C for last 6 years.
 
-I can write in a lot of languages: C, C++, Objective C, Asm, C#, F#, Java, Scala, Erlang, Go, JavaScript, Python, HTML, XML, Php.
-I like MOOCs too. Currently i am learning haskell, erlang, rust. also i am fan of Colemak, Emacs, IntelliJ and MacBook Air.
+I use a lot of languages: C, C++, Objective C, Asm, C#, Java, Scala, Erlang, Go, JavaScript, Python, Php...
+I like MOOCs too. Currently i am learning haskell, erlang, rust. also i am fan of Colemak, Emacs, Vim, IntelliJ and MacBook.
 
 I am interested in: Linux, Distributed systems, Scalability, Go/Rust/JVM/Scala.
 
@@ -19,13 +19,22 @@ Here i write my own thoughts.
 
 ### My lovely podcasts
 
+#### Rus
+
 * [Radio-T](http://www.radio-t.com/)
 * [DevZen](http://devzen.ru/)
 * [CTO cast](http://ctocast.com/)
-* [RadioJS about FrontEnd and a lot of buzz words included](http://radiojs.ru/)
+
+#### Eng
+
 * [the ChangeLog](https://changelog.com/)
 * [Pragmatic](https://pragprog.com/podcasts)
 * [FLOSS](https://twit.tv/shows/floss-weekly)
+
+#### Lang
+
+* [RadioJS about FrontEnd and a lot of buzz words included](http://radiojs.ru/)
+* [GoLang show](http://golangshow.com/)
 * [Java Posse](http://javaposse.com/)
 
 ### My lovely blogs
