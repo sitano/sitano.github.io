@@ -17,7 +17,7 @@ Looking at the sources of the basic `vec!` type following flaws were found:
   That leads to the fact this code can't be reused anywhere off the Rust `internals`
   unless your own implementation is sticked to it tight, based on raw ptrs,
   or any other magic internal structs which are overlap each other in a
-  enormous large manner.a
+  enormous large manner.
 
 * A lot of code duplication for implementations of all basic traits along all
   internal abstractions.
@@ -28,3 +28,26 @@ Looking at the sources of the basic `vec!` type following flaws were found:
 * The fact that the sources of the platform (collection sources for example) do
   not present a good language style (idioms) do not speak for the Rust. It is
   1.2 out and `libcollections` still refactoring heavily.
+
+* Most projects on the github uses specific `#!features` of the language
+  available only under `night` build what is actually makes all `stable` and
+  `beta` releases useless, coz guess what - you can't build nothing without it.
+
+* There is no big nice projects on the github but mozilla's browser. There is a
+  `REPL` project which requires `night` build as well. Another interesting project
+  is `redis` remake called `sredis`.
+
+* High entrance bar. It's because Rust hides all pointers semantics details from you,
+  which in C++ are much clearer. More over, Rust changes syntax over the releases
+  for the various pointers types (i.e. unique pointers). So many articles on Rust
+  do not work already. And finally, when you think all the hidden details would ease
+  a life for you, just do not go into the source code implementation.
+
+* There is no templates specialization support yet.
+
+* There is no negative constraints support for template parameters (: !Display).
+
+* You can't match on traits (by type).
+
+* There is no way to implement trait for enum instance. Enum instance / values 
+  (that stands for ADT) are not types actually.
