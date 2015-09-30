@@ -49,6 +49,7 @@ My Blog: http://sitano.github.io/
 * [Radio-T](http://www.radio-t.com/)
 * [DevZen](http://devzen.ru/)
 * [CTO cast](http://ctocast.com/)
+* [Razbor Poletov](http://razbor-poletov.com/)
 
 #### Eng
 
