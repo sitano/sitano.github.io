@@ -126,7 +126,7 @@ Available operational modes are:
   restricts any other configuration (more than 1 known server) for this specific node.
   It can not be part of any other cluster.
 
-* `Multi nodes cluster` can enabled by omitting the `single` mode flags. Thanks to _Raft_ -
+* `Multi nodes cluster` can be enabled by omitting the `single` mode flags. Thanks to _Raft_ -
   `leader` can be elected even in the case of *at least 2* nodes are present.
   Its fine for Consul. It can go with 2. Its not recommended though. Thus,
   multi nodes cluster can't go under 2 nodes quorum. In that state it will lose
@@ -150,7 +150,7 @@ Where are your `raft/peers.json`, `serf/local.snapshot` locates and what they co
 In the situation of the outage you will want to find out in what state your cluster is.
 It can be done through looking across your _serf_ and _raft_ peers list.
 
-* `raft/peers.json` contains current known _raft_ peers set - literally the nodes that
+* `raft/peers.json` contains currently known _raft_ peers set - literally the nodes that
   take part in the quorum and consensus.
 
 * `serf/*.snapshot` contains journal of _serf_ protocol progressing through time. You
@@ -243,7 +243,7 @@ To achieve this follow this steps:
 
     If you have only `single entry` there, `[]` or `null` it rather means it is wrong.
 
-About the `Outage` doc
+About the `outage` doc
 ----------------------
 
 It missing some points in the part of manually fixing `raft/peers.json`.
@@ -263,7 +263,7 @@ It missing some points in the part of manually fixing `raft/peers.json`.
     In the case you have to fix your peers json files manually, it makes sense to
     add everything you need at once.
 
-Case we run into
+Case we ran into
 ----------------
 
 1. We have restarted the whole cluster in parallel
@@ -287,6 +287,6 @@ Tips
   right into json),
 
 * If you have unsynced _raft_ peers set and _serf_ and there are some nodes in _raft_
-  missing in _seft_ the only option to remove them will be to manually cut them from
+  missing in _serf_ the only option to remove them will be to manually cut them from
   the `raft/peers.json`. `force-leave` works only for nodes present in _serf_ peers list
   first (at least for the state of version 0.5.2).
