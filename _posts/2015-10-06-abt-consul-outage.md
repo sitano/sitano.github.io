@@ -257,14 +257,18 @@ It missing some points in the part of manually fixing `raft/peers.json`.
     > If any servers managed to perform a graceful leave, you may need to have then
     > rejoin the cluster using the join command`
 
-    before doing that, you should fix your quorum.
+    before doing that, you should fix your quorum (or add/restore them manually
+    straight to the json file).
+
+    In the case you have to fix your peers json files manually, it makes sense to
+    add everything you need at once.
 
 Case we run into
 ----------------
 
 1. We have restarted the whole cluster in parallel
 
-2. `skip\_leave\_on\_interrupt` was set to _false_, so every node issued
+2. `skip_leave_on_interrupt` was set to _false_, so every node issued
    `leave` event to the cluster, so they end up with cleared _raft_ peers list each.
 
 3. After restart they of course failed to build a quorum without any neighbours
