@@ -191,14 +191,16 @@ Default response to the signals
 * SIGINT - Graceful leave by default, can be configured to be non-graceful,
 * SIGTERM - Non-graceful leave. Can be configured to be graceful.
 
-What to do in the outage situation
-==================================
+What to do in the outage situation of Multi-Server Cluster
+==========================================================
 
 This is kind of situation in which you end up with `No cluster leader` and
 it cant heal it self. That means that you lost your quorum and the quorum
 lost the majority. Actually in the multi node cluster mode it will mean
 that your _raft_ peers links are completely wrong (i.e. case when each node
 knows about it self only).
+
+Read the [Outage](https://www.consul.io/docs/guides/outage.html) doc.
 
 In order to make your cluster work again, you have to put it into the consistent
 state in which the leader and the quorum are present:
@@ -241,6 +243,36 @@ To achieve this follow this steps:
 
     If you have only `single entry` there, `[]` or `null` it rather means it is wrong.
 
+About the `Outage` doc
+----------------------
+
+It missing some points in the part of manually fixing `raft/peers.json`.
+
+1. It is not enough to just get rid of failed nodes. You have to make sure you have all
+   other healthy nodes in there. Without it you will not build up a quorum. Without a
+   working quorum, its impossible to:
+
+2. do what they claim next:
+
+    > If any servers managed to perform a graceful leave, you may need to have then
+    > rejoin the cluster using the join command`
+
+    before doing that, you should fix your quorum.
+
+Case we run into
+----------------
+
+1. We have restarted the whole cluster in parallel
+
+2. `skip\_leave\_on\_interrupt` was set to _false_, so every node issued
+   `leave` event to the cluster, so they end up with cleared _raft_ peers list each.
+
+3. After restart they of course failed to build a quorum without any neighbours
+   in the _raft_ list.
+
+To fix it, we restored original `raft/peers.json` file on each server node and
+restarted the cluster.
+
 Tips
 ----
 
@@ -253,4 +285,4 @@ Tips
 * If you have unsynced _raft_ peers set and _serf_ and there are some nodes in _raft_
   missing in _seft_ the only option to remove them will be to manually cut them from
   the `raft/peers.json`. `force-leave` works only for nodes present in _serf_ peers list
-  first (at least for the state of version 0.5.2),
+  first (at least for the state of version 0.5.2).
