@@ -277,6 +277,29 @@ Case we ran into
 To fix it, we restored original `raft/peers.json` file on each server node and
 restarted the cluster.
 
+Observable Consul behaviour on term
+-----------------------------------
+
+All Consul `servers` have `consul` service embedded. All Consul nodes have
+`Serf Health Status` health check which does not exposed by default for `client`
+node types.
+
+- if `Server` node `Left` - it leaves `/v1/catalog/nodes` list,
+  `/v1/health/service/consul` and `/health/node/{name}`,
+
+- if `Server` node `Failed` - it does not leave `/v1/catalog/nodes` list,
+  `/v1/health/service/consul` and `/health/node/{name}` having:
+
+        ([{"Node":"node3","CheckID":"serfHealth","Name":"Serf Health Status","Status":"critical","Notes":"","Output":"Agent not live or unreachable","ServiceID":"","ServiceName":""}]),
+
+- if `Client` node `Left` - it leaves `/v1/catalog/nodes` list,
+  `/v1/health/service/consul` and `/health/node/{name}`,
+
+- if `Client` node `Failed` - it does not leave `/v1/catalog/nodes` list,
+  `/v1/health/service/consul` and `/health/node/{name}` having:
+
+        [{"Node":"node4","CheckID":"serfHealth","Name":"Serf Health Status","Status":"critical","Notes":"","Output":"Agent not live or unreachable","ServiceID":"","ServiceName":""}].
+
 Tips
 ----
 
