@@ -35,13 +35,6 @@ Also i am fan of Colemak, Vim, Emacs, IntelliJ and MacBook.
 
 My hobby is to reverse engineer managed languages.
 
-If you would like to find more info about my work, check out following:
-My GitHub: https://github.com/sitano
-My Gist: https://gist.github.com/sitano
-My Twitter: https://twitter.com/JohnKoepi
-My LinkedIn: https://ru.linkedin.com/in/prisyaznyy
-My Blog: http://sitano.github.io/
-
 ### My lovely podcasts
 
 #### Ru
@@ -56,6 +49,7 @@ My Blog: http://sitano.github.io/
 * [the ChangeLog](https://changelog.com/)
 * [Pragmatic](https://pragprog.com/podcasts)
 * [FLOSS](https://twit.tv/shows/floss-weekly)
+* [Software Engineering Radio](http://www.se-radio.net/)
 
 #### Lang
 
