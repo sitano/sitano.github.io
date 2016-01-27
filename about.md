@@ -3,37 +3,24 @@ layout: page
 title: About
 ---
 
-### Hey there! My name is Ivan Prisyazhnyy.
+### Ivan Prisyazhnyy.
 
-I am a Backend system engineer.
-(Linux, Distributed systems, Scalability, High Load)
+Linux open source backend engineer messing with Distributed Systems / 
+Scala (JVM, Clojure) / Go / C / C++ / Haskell.
 
-I started coding from very early age (in 90s).
-I fall in love with computers and hacking games with a
-hex editors and SoftICE. Later my way laid through
-Unix books, C++ to managed languages, from dynamic to
-static ones.
+I have at least 10 years of professional experience in Software Engineering 
+with strong focus on a field of linux backend open source software. 
+I am polyglot with developed skills to read, understand and refactor code 
+other people wrote and experience in running and troubleshooting production 
+systems.
 
-I always liked networks and distributed things. So
-i put an effort into it finally revealed my self in the
-field of: linux world of distributed scalable fault tolerant
-reliable systems. (I have tried to fell in love with frontend
-developing many times but found it too boring)
+For the last 8 years I have extensively used Java, Go, Node.JS, Scala, 
+PowerShell, C#, Bash, Ruby, Python and etc.
+My hobby is reversing engineer managed software and reading papers about 
+distributed software. 
 
-My passion is looking for a new concepts and things,
-discover new technologies and ideas in applied languages,
-so i ended up with a huge bunch of tech i have tried.
-I can code in any C-style language (C, C++, Objective C,
-Asm, C#, Java, Scala, Erlang, Go, JavaScript, Python,
-Ruby, HTML, ...).
-
-Finally i am proficient in Java, Scala, JavaScript (Node.JS),
-Go, C#, PowerShell, Bash for last 8 years. Also, I am a fan of
-twitter, facebook, google, amazon open source stuff.
-Lastly i am looking at haskell, erlang and rust.
-Also i am fan of Colemak, Vim, Emacs, IntelliJ and MacBook.
-
-My hobby is to reverse engineer managed languages.
+p.s. I am a fan of twitter, facebook, google, amazon open source stuff
+, *nix, colemak, vim, emacs, intellij and macs.
 
 ### My lovely podcasts
 
