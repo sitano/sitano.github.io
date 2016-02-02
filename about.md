@@ -5,22 +5,22 @@ title: About
 
 ### Ivan Prisyazhnyy.
 
-Linux open source backend engineer messing with Distributed Systems / 
-Scala (JVM, Clojure) / Go / C / C++ / Haskell.
+Linux open source backend engineer passionate about Distributed Systems,
+Languages and Storage engines.
 
-I have at least 10 years of professional experience in Software Engineering 
-with strong focus on a field of linux backend open source software. 
-I am polyglot with developed skills to read, understand and refactor code 
-other people wrote and experience in running and troubleshooting production 
+I have at least 10 years of professional experience in Software Engineering
+with strong focus on a field of linux backend open source software.
+I am polyglot with developed skills to read, understand and refactor code
+other people wrote and experience in running and troubleshooting production
 systems.
 
-For the last 8 years I have extensively used Java, Go, Node.JS, Scala, 
+For the last 8 years I have extensively used Java, Go, Node.JS, Scala,
 PowerShell, C#, Bash, Ruby, Python and etc.
-My hobby is reversing engineer managed software and reading papers about 
-distributed software. 
+My hobby is reversing engineer managed software and reading papers about
+distributed software.
 
 p.s. I am a fan of twitter, facebook, google, amazon open source stuff
-, *nix, colemak, vim, emacs, intellij and macs.
+, \*nix, colemak, vim, emacs, intellij and macs.
 
 ### My lovely podcasts
 

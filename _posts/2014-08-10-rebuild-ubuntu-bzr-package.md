@@ -9,8 +9,6 @@ Read Manual at [Ubuntu Packaging Guide](http://packaging.ubuntu.com/html/index.h
 
 [Getting set up instructions](http://packaging.ubuntu.com/html/getting-set-up.html)
 
-_This step can be skipped partially for our VAGRANT distro._
-
 There are a number of tools that will make your life as an Ubuntu developer much easier. You will encounter these tools later in this guide. To install most of the tools you will need run this command:
 
     $ sudo apt-get install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file
@@ -88,6 +86,11 @@ In Precise, a quick and dirty fix is to edit the file `/usr/bin/pbuilder-dist` ,
     $ bzr branch ubuntu:precise/memcached memcached.dev
     $ cd memcached.dev
 
+If you've got something like `bzr: ERROR: Revision {package-import@ubuntu.com-*}
+not present in "Graph(StackedParentsProvider(bzrlib.repository._LazyListJoin(([CachingParentsProvider(None)], []))))"`
+on branching bzr request, use: `-Olaunchpad.packaging_verbosity=off` to mitigate the
+[issue](https://bugs.launchpad.net/bzr/+bug/888615).
+
 ### Working on package
 
 [http://packaging.ubuntu.com/html/udd-working.html](http://packaging.ubuntu.com/html/udd-working.html)
@@ -145,9 +148,13 @@ This could for example be:
 
     lp:~john-koepi/ubuntu/precise/memcached/memcached.dev
 
+or
+
+    lp:~john-koepi/ubuntu/precise/memcached/default
+
 So if you just run:
 
-    $ bzr push lp:~john-koepi/ubuntu/precise/memcached/memcached.dev
+    $ bzr push lp:~john-koepi/ubuntu/precise/memcached/default
 
 ### Uploading packages to this PPA
 
