@@ -43,6 +43,7 @@ p.s. I am a fan of twitter, facebook, google, amazon open source stuff
 * [RadioJS about FrontEnd and a lot of buzz words included](http://radiojs.ru/)
 * [GoLang show](http://golangshow.com/)
 * [Java Posse](http://javaposse.com/)
+* [About Haskell](http://bananasandlenses.net/)
 
 ### My lovely blogs
 
