@@ -52,6 +52,7 @@ p.s. I am a fan of twitter, facebook, google, amazon open source stuff
 * [Stevey's Drunken Blog Rants about Programming life](https://sites.google.com/site/steveyegge2/blog-rants)
 * [Brendan D. Gregg about Linux Perfomance](http://www.brendangregg.com/)
 * [Brave New Geek - Introspections of a software engineer](http://bravenewgeek.com/)
+* [Dan Luu - Hardware/Software Engineer at Microsoft](http://danluu.com/)
 
 ### You can find me at:
 
