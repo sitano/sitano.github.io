@@ -3,8 +3,8 @@ layout: post
 title: Go channels are not wrong (slow mutexes), but you are
 ---
 
-This post appeared as an attempt to analyze popular trend lately
-in the Go community to write an articles usually called: go channels
+This post appeared as an attempt to address a popular trend in the 
+Go community lately, to write an articles usually called: go channels
 are slow compared to whatever (mutexes, ring buffers, etc) - you
 name it. Which I personally think are not a) correct, b) they tend
 to urge people in what channels actually are not in its nature, thus
@@ -26,6 +26,8 @@ What are go sync primitives actually?
 spinning
 --------
 
+TODO: what is max spinning ns/op to sync pri?
+
 futex, note
 -----------
 
@@ -37,6 +39,18 @@ mutex
 
 channel
 -------
+
+Scheduling details
+==================
+
+parking
+-------
+
+
+goshed queue
+------------
+
+TODO: what is ns/op to rescheduling?
 
 What are good design patterns for Go channels?
 ==============================================
