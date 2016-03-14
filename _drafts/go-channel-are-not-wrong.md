@@ -199,8 +199,10 @@ Meaningless speed of self rescheduling?
 ---------------------------------------
 
 This will call `runtime.Gosched()` on the benchmark goroutine with -cpu=1 to measure
-switch to `g0` and rescheduling to self. I don't see much sense to measure this call
-with higher concurrency.
+switch to `g0` and rescheduling to self. It's clear the latency of getting next piece
+of cpu time depends on the number of cores to thread pool size to number of goroutines,
+their overall greediness and scheduler fairness algorithm.
+
 
 ```golang
 
