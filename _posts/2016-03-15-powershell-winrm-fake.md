@@ -1,11 +1,20 @@
 ---
 layout: post
-title: Trying to use FAKE (F#) via WinRM with PowerShell
+title: Calling FAKE (F#) via WinRM from PowerShell
 ---
 
-This is an overview of the method of combining F# statically typed scripts
-with [Windows Remote Manager](https://msdn.microsoft.com/en-us/library/windows/desktop/aa384426.aspx)
-remote invokations with a PowerShell. Its based on the following articles:
+PowerShell struggles without static typing and due to its rich dynamic
+nature. To write secure code with PowerShell developers ought to use
+[TTD](https://github.com/pester/Pester) providing 100% code coverage.
+
+I was interested in combining some strongly typed approaches with PowerShell
+remoting popular in our practice.
+
+This is an overview of the method of combining PowerShell,
+[Windows Remote Manager](https://msdn.microsoft.com/en-us/library/windows/desktop/aa384426.aspx)
+[F#](http://fsharp.github.io/) and [FAKE](https://github.com/fsharp/FAKE).
+
+Its based on the following articles:
 
 - https://blogs.msdn.microsoft.com/fsharpteam/2012/10/03/rethinking-findstr-with-f-and-powershell/
 - http://tahirhassan.blogspot.ru/2014/06/embedding-f-in-powershell-hacky-way.html
@@ -77,9 +86,7 @@ Invoke-Command -ComputerName SECOND -ScriptBlock { Write-Output $env:COMPUTERNAM
 Provide `Microsoft Build Tools 2015`
 ------------------------------------
 
-Microsoft Build Tools 2015 is required for CodeDom to work to mitigate
-`Microsoft.Build.Utilities.Core, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a`
-error.
+Microsoft Build Tools 2015 is required for FSharp Tools.
 
 Install Microsoft Build Tools 2015 from https://go.microsoft.com/fwlink/?LinkId=615458,
 it can be installed quietly using: /Quiet /Full.
@@ -169,8 +176,8 @@ Invoke-Command -ComputerName SECOND -ScriptBlock {
 
 ```
 
-Call `fake` somehow from F#
----------------------------
+Use `fake`
+----------
 
 ```powershell
 
