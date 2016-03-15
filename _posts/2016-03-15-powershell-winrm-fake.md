@@ -1,27 +1,27 @@
 ---
 layout: post
-title: Calling FAKE (F#) via WinRM from PowerShell
+title: Approach into strong typed configuration management DSL with FAKE, F#, WinRM and PowerShell
 ---
 
 PowerShell is a dynamic language based on a subset of C# with extension
-into Shell requirements. This language is the future of Windows based
+into the shell requirements. This language is the future of Windows based
 servers administration and management.
 
 Almost all popular Configuration Management Systems came from Linux
-world like Puppet, Ansible, Salt, Chef, CF-engine and etc are weakly typed,
-are based either on specific DSL or implementation Language. There is
+world like Puppet, Ansible, Salt, Chef, CF-engine etc are weakly typed,
+based either on specific DSL or implementation Language. There is
 not much in the Windows world. Microsoft always tend to provide their
 own vendor locking solution and this time its not an exception: Desired
 State Configuration system based on PowerShell.
 
 Yet all those solutions struggles all the problems all dynamic languages have.
-That means, that after making a change you can't be sure, if it is valid,
+This means, that after making a change you can't be sure, if it is valid,
 will it interpret or execute until you give 100% test coverage. PowerShell
 in addition do not have static code analysis tools and do not protect
 from errors like using undefined variables (or steeled from another scopes).
 
 This leads to the problems of correctness, support and maintainability.
-You never can be sure, until you run it.
+You can't be sure, until you run it.
 
 In PowerShell case [Pester](https://github.com/pester/Pester) can help
 providing TTD infrastructure like running framework, context, dsl, mocking,
@@ -47,9 +47,9 @@ Possible implementations of the Configuration Management System could be
 based on following concepts:
 
 - Given FSharp runtime, compiler and required libraries on every Target machine,
-  system will pass F# scripts inside ScriptBlocks as simple text, remove compile
-  them and execute directly via dynamic type resolving, interface cast and execution.
-
+  system will pass F# scripts inside ScriptBlocks as a simple text, compile
+  them remotely and execute directly via dynamic type resolving, interface
+  cast and execution.
   - CodeDom in memory on demand compilation
   - Direct fsc.exe call
   - FSharp.Compiler.Services ?
@@ -57,7 +57,6 @@ based on following concepts:
 - The system can compile locally on demand F# scripts, pass compiled assemblies
   any how to the target machine (via pssession, cloud storage, etc) and run them
   remotely.
-
   - fsc.exe, copy to remote site
   - direct injection of the assembly into pssession from []byte, instead of
     distribution
@@ -88,20 +87,15 @@ saving my time.
 Use the following requirements and installation steps:
 
 1.  Requires .NET 4.5:
-
     - On Windows 10 .NET 4.6 is already present by default
     - On Windows 8 and Windows 2012 Server, this is already present by default
     - On Windows 7 and Windows 2008 Server, [install .NET 4.5](http://www.microsoft.com/net/downloads) from Microsoft
-
 2. Requires the Windows SDK:
-
     - On Windows 10 use the [Windows 10 and .NET 4.6 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk) from Microsoft
     - On Windows 8.1 use the [Windows 8.1 and .NET 4.5.1 SDK](http://msdn.microsoft.com/windows/desktop/bg162891) from Microsoft
     - On Windows 8 or Windows 2012 Server use the [Windows 8 and .NET 4.5 SDK](http://msdn.microsoft.com/windows/hardware/hh852363.aspx) from Microsoft
     - On Windows 7 or Windows 2008 Server use the [Windows 7 and .NET 4.0 SDK](http://www.microsoft.com/download/details.aspx?id=8279) from Microsoft
-
 3. Requires Microsoft Build Tools 2015 - [Install Microsoft Build Tools 2015](https://www.microsoft.com/en-us/download/details.aspx?id=48159)
-
 4. [Install the free Visual F# Tools 4.0](https://www.microsoft.com/en-us/download/details.aspx?id=48179) from Microsoft
 
 Test your PowerShell CLR environment
