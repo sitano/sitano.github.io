@@ -89,18 +89,8 @@ minimizing latency?
 
 Do you trust go runtime scheduler? Why not, if you chose to use co-routines?
 
-So You Wanna Go Fast?
-------------------
-
-???
-
-Prometheus: Designing and Implementing a Modern Monitoring Solution in Go
-------------------
-
-???
-
-Implementation
-==============
+Implementation details first
+============================
 
 I am using Go [1.6](https://github.com/golang/go/releases/tag/go1.6)
 [source code](https://github.com/golang/go/tree/7bc40ffb05d8813bf9b41a331b45d37216f9e747).
@@ -151,17 +141,20 @@ func Gosched() {
 
 ```
 
-goshed & queues
+Runtime.gosched
 ---------------
 
-The scheduler maintains global run queue. Next goroutine will be chosen from this
-global run queue and local to `p` run queue. If there is no work, it will rather wait
-trying to steal job from other resources `p*` before with `findrunnable`.
+The scheduler maintains [global run queue](
+https://github.com/golang/go/blob/7bc40ffb05d8813bf9b41a331b45d37216f9e747/src/runtime/runtime2.go#L429).
+Next goroutine will be chosen from this global run queue and [local to `p` run queue](
+https://github.com/golang/go/blob/7bc40ffb05d8813bf9b41a331b45d37216f9e747/src/runtime/runtime2.go#L363).
+If there is no work, it will rather wait trying to steal job from other resources `p*`
+before with `findrunnable`.
 
 _Note. There is even network steeling opt. of goroutines ;)_
 
-This is a [famous](https://golang.org/pkg/runtime/#Gosched)
-[runtime.Gosched](https://github.com/golang/go/blob/7bc40ffb05d8813bf9b41a331b45d37216f9e747/src/runtime/proc.go#L242)
+This is a [famous](https://golang.org/pkg/runtime/#Gosched) [runtime.Gosched](
+https://github.com/golang/go/blob/7bc40ffb05d8813bf9b41a331b45d37216f9e747/src/runtime/proc.go#L242)
 call, which yields the processor, allowing other goroutines to run.
 
 ```golang
@@ -195,14 +188,13 @@ current goroutine, so execution resumes automatically.
 Gosched can be met in some places inside the go runtime and in implementations
 of various user level sync primitives like [Ring Buffer](https://github.com/Workiva/go-datastructures/blob/master/queue/ring.go#L114).
 
-Meaningless speed of self rescheduling?
----------------------------------------
+Minimal rescheduling latency?
+-----------------------------
 
 This will call `runtime.Gosched()` on the benchmark goroutine with -cpu=1 to measure
 switch to `g0` and rescheduling to self. It's clear the latency of getting next piece
 of cpu time depends on the number of cores to thread pool size to number of goroutines,
 their overall greediness and scheduler fairness algorithm.
-
 
 ```golang
 
@@ -218,10 +210,36 @@ func BenchmarkGosched(b *testing.B) {
 
 Run: `go test -v -run ! -bench Gosched`. I have got 105 ns/op.
 
-parking
+Parking
 -------
 
-???
+A goroutine can be took off the scheduling for a while to keep resources free until
+some condition met. It called `parking`. Often and almost always go runtime uses
+this method to implement various synchronisation primitives behavior and implementation.
+
+* `gopark` puts the current goroutine into a waiting state and calls unlockf.
+  If unlockf returns false, the goroutine is resumed. Implementation execute scheduling
+  of the next goroutine forgetting about existence of current one, until it will
+  be brought back by `goready`. Thus, schedule do not waste resources for goroutines
+  waiting some external event to continue its execution. This used exactly instead
+  of spinning cpu;
+* `goparkunlock` puts the current goroutine into a waiting state and unlocks the lock
+  by calling `parkunlock_c` over internal `mutex` object. If unlockf returns false,
+  the goroutine is resumed. Implemented via;
+* `goready / ready` mark gp ready to run. Naturally `unpark`. Places a goroutine
+  into the next run slot (via `runqput`) or to the local run queue (size 256) if
+  its contended. If the local run queue is full, runnext puts g on the global queue.
+
+Parking used in implementations of io, gc, timers, finalizers, channels, panics, tracer,
+semaphore and select.
+
+It effectively used for implementations of sync primitives when the moment of acquisition
+or releasing the lock is known in advance (instead of blind spinning) (by some external
+event i.e.).
+
+If there was no contention on next run slot on the `p`, `goready` can effectively
+bring goroutine back to life omitting long passing through the run queues what
+intended to minimize latency.
 
 What are go sync primitives actually?
 =====================================
@@ -252,6 +270,16 @@ mutex
 
 channel
 -------
+
+???
+
+So You Wanna Go Fast?
+=====================
+
+???
+
+Prometheus: Designing and Implementing a Modern Monitoring Solution in Go
+=====================
 
 ???
 
