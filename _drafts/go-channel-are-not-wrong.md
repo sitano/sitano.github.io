@@ -241,17 +241,81 @@ If there was no contention on next run slot on the `p`, `goready` can effectivel
 bring goroutine back to life omitting long passing through the run queues what
 intended to minimize latency.
 
-What are go sync primitives actually?
-=====================================
+Sync primitives
+===============
 
-???
+Internally go runtime uses special lightweight sync primitives not exposed
+under `sync` package. They usually used as a fundamental build blocks for
+all other user space things.
+
+Main points of interests are:
+
+* atomic operations
+  _check runtime/internal/atomic, runtime/atomic_
+  (I will not cover these)
+* futex _runtime/lock_futex_
+* semaphore _runtime/lock_sema_ and async semaphore _runtime/sema_
+* channels _runtime/chan_ (for communication)
+* anything else in _sync_ like mutex, once, cond, rw, wg and etc.
 
 spinning
 --------
 
-???
+Spinning is a method of optimization of race conds in locks acquisition.
+Locks based on spinning called `spinlocks`. Lit usually treats that as a
+separate independent type of lock. I disagree to this.
 
-TODO: what is max spinning ns/op to sync pri?
+Wikipedia: A spinlock is a lock which causes a thread trying to acquire
+it to simply wait in a loop ("spin") while repeatedly checking if the lock
+is available. Since the thread remains active but is not performing a useful task,
+the use of such a lock is a kind of busy waiting.
+
+In go, spinning present in following forms:
+
+* cpu spin loop (procyield)
+* thread yielding (go sched level resched)
+* process yielding (os level resched)
+
+These are implemented in:
+
+* _runtime/lock\_sema.go, runtime/lock\_futex.go_ gives main constraints + procyield + osyield
+* _runtime/proc.go_ sync_runtime_canSpin, sync_runtime_doSpin
+* separate implementation of `spinlock` present in _runtime/internal/atomic/atomic_arm.go_
+
+Implementation allows up to 4 spinning attempts by 30 steps loops before
+relaxing to passive mode, which is os kernel resched switch:
+
+```
+active_spin     = 4
+active_spin_cnt = 30
+passive_spin    = 1
+```
+
+Spinning in conjunction with parking is used almost in every sync primitives like futexes,
+semas, mutexes, channels and etc.
+
+```
+func sync_runtime_doSpin() {
+	procyield(active_spin_cnt)
+}
+```
+
+`sync_runtime_doSpin` calls for `procyield` to run spin loop for 30 times before
+returning unsuccessful result. `procyield` uses `PAUSE` asm instruction to mitigate
+code speculative execution miss on cpu level.
+
+Few implementations (like `mutex`) checks `sync_runtime_canSpin` first to save some resources.
+
+`sync.Mutex` is cooperative, so it tries to be conservative with spinning.
+Spins only few times and only if running on a multicore machine and
+GOMAXPROCS>1 and there is at least one other running P and local runq is empty.
+As opposed to runtime mutex it doesn't do passive spinning here,
+because there can be work on global runq on on other Ps.
+
+`osyield` in the simplest form implemented via calling os level `sleep(0)`.
+
+Max spinning attempt 4x30 speed
+-------------------------------
 
 futex, note
 -----------
