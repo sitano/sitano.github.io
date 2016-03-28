@@ -20,7 +20,7 @@ I will address to the following articles:
   by Björn Rabenstein on Prometheus, SoundCloud, 2015-Talk,
   [code](https://github.com/beorn7/concurrentcount/blob/master/benchmark_test.go)
 
-Whats wrong with these tests?
+Whats wrong with those tests?
 =============================
 
 Intro
@@ -208,7 +208,7 @@ func BenchmarkGosched(b *testing.B) {
 
 ```
 
-Run: `go test -v -run ! -bench Gosched`. I have got 105 ns/op.
+Run: `go test -v -run ! -bench Gosched`. I have got `105 ns/op`.
 
 Parking
 -------
@@ -252,7 +252,7 @@ Main points of interests are:
 
 * atomic operations
   _check runtime/internal/atomic, runtime/atomic_
-  (I will not cover these)
+  (I will not cover those)
 * futex _runtime/lock_futex_
 * semaphore _runtime/lock_sema_ and async semaphore _runtime/sema_
 * channels _runtime/chan_ (for communication)
@@ -285,7 +285,7 @@ These are implemented in:
 Implementation allows up to 4 spinning attempts by 30 steps loops before
 relaxing to passive mode, which is os kernel resched switch:
 
-```
+```golang
 active_spin     = 4
 active_spin_cnt = 30
 passive_spin    = 1
@@ -294,7 +294,7 @@ passive_spin    = 1
 Spinning in conjunction with parking is used almost in every sync primitives like futexes,
 semas, mutexes, channels and etc.
 
-```
+```golang
 func sync_runtime_doSpin() {
 	procyield(active_spin_cnt)
 }
@@ -316,6 +316,55 @@ because there can be work on global runq on on other Ps.
 
 Max spinning attempt 4x30 speed
 -------------------------------
+
+This kind of active spinning used almost in every sync primitive (sema, futex, mutex, ...).
+
+```golang
+
+// proc_test.s
+
+#include "go_asm.h"
+#include "go_tls.h"
+#include "funcdata.h"
+#include "textflag.h"
+
+TEXT runtime·ProcYield(SB),NOSPLIT,$0-0
+	MOVL	cycles+0(FP), AX
+again:
+	PAUSE
+	SUBL	$1, AX
+	JNZ	again
+	RET
+
+// proc.go
+package runtime
+
+func ProcYield(cycles uint32)
+
+// proc_test.go
+package runtime_test
+
+const (
+	active_spin     = 4
+	active_spin_cnt = 30
+	passive_spin    = 1
+)
+
+func MaxSpin() {
+	for i := 0; i < active_spin; i ++ {
+		runtime.ProcYield(active_spin_cnt)
+	}
+}
+
+func BenchmarkMaxSpin(b *testing.B) {
+	for i := 0; i < b.N; i ++ {
+		MaxSpin()
+	}
+}
+
+```
+
+Results of `go test -run ! -bench MaxSpin . -v` is `420 ns/op`.
 
 futex, note
 -----------
