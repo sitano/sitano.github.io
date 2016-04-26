@@ -27,8 +27,10 @@ Someone should give the same talk on PowerShell:
 Stupidness
 ----------
 
-Any code line is checked when its run `& { return 1; z@x#cv.1 }`, so you
-will never know in advance is your code even valid.
+Scripts are interpreted. That means a code line checked only when its run
+`& { return 1; z@x#cv.1 }`. You will never know in advance is your code
+even valid. Thus, to test your code you have to write tests which execute
+every single line of code with its all conditional blocks.
 
 Single array equivalent to single value `@(1) -eq 1 -eq '1'`.
 
@@ -58,11 +60,17 @@ and can be overridden manually per call / context.
 
 `Write-Error` can throw different types of exceptions.
 
+Exceptions bubbling stop crossing ScriptBlock boundary:
+`try { { Write-Error 'x' -ErrorAction Stop } | Out-Null; 1; } catch {}`. No
+excuse for this. Yeah, PowerShell developers think its funny when things
+changes symantic dynamically depending on context.
+
 Preferences variables are not catched by closures.
 
-Variables scoping is broken: `& { if ($true) { $a = 1 }; $a }`.
+Variables scoping is broken: `& { if ($true) { $a = 1 }; $a }`. Its
+impossible to test function, whether its argument complete.
 
-By default cmdlets like `Get-Item 'non-existing-file'; $true` will print 
+By default cmdlets like `Get-Item 'non-existing-file'; $true` will print
 an error, but continue to execute!
 
 And so on.
