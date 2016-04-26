@@ -65,6 +65,8 @@ Exceptions bubbling stop crossing ScriptBlock boundary:
 excuse for this. Yeah, PowerShell developers think its funny when things
 changes symantic dynamically depending on context.
 
+Sorry, - `{ throw "Error" } | Out-Null; 1` same exception redirection.
+
 Preferences variables are not catched by closures.
 
 Variables scoping is broken: `& { if ($true) { $a = 1 }; $a }`. Its
