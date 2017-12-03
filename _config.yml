@@ -1,6 +1,13 @@
-# Dependencies
-markdown:         redcarpet
-highlighter:      pygments
+# Jekyll 3 now only supports Kramdown for Markdown
+kramdown:
+  # Use GitHub flavored markdown, including triple backtick fenced code blocks
+  input: GFM
+  # Jekyll 3 and GitHub Pages now only support rouge for syntax highlighting
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    # Use existing pygments syntax highlighting css
+    css_class: 'highlight'
+
 
 # Permalinks
 permalink:        pretty
@@ -11,7 +18,6 @@ tagline:          'backend system engineer'
 description:      'Made by <a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a>.'
 url:              http://sitano.github.io
 baseurl:          '/'
-paginate:         5
 
 author:
   name:           'Ivan Prisyazhnyy'
@@ -28,7 +34,7 @@ comments:
     short_name: 'sitanogithubio'
 
 # Custom vars
-version:          1.0.0
+version:          v1.1.0
 
 github:
   repo:           https://github.com/sitano

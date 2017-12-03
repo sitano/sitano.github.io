@@ -5,47 +5,41 @@ title: About
 
 ### Ivan Prisyazhnyy.
 
-Linux open source backend engineer passionate about Distributed Systems,
-Languages and Storage engines.
+Linux open source backend engineer, passionate about Distributed Systems,
+Open Source, Programming Paradigms, and Storage engines.
 
-I have at least 10 years of professional experience in Software Engineering
-with strong focus on a field of linux backend open source software.
-I am polyglot with developed skills to read, understand and refactor code
-other people wrote and experience in running and troubleshooting production
-systems.
+My hobby is reverse engineering and learning. I am fan of Twitter, Facebook,
+Google and Amazon OSS, Unix, Colemak, Vim/Emacs and mechanical keyboards.
 
-For the last 8 years I have extensively used Java, Go, Node.JS, Scala,
-PowerShell, C#, Bash, Ruby, Python and etc.
-My hobby is reversing engineer managed software and reading papers about
-distributed software.
+I am fond of fitness and boxing, the same much I am trying to fit my
+perfectionism into reasonable constraints.
 
-p.s. I am a fan of twitter, facebook, google, amazon open source stuff
-, \*nix, colemak, vim, emacs, intellij and macs.
+p.s. _:w_
 
-### My lovely podcasts
+### Profound podcasts
 
-#### Ru
+* DevZen - dist systems and various stuff
+* Razbor Poletov - mostly ru java community
+* CppCast - awesome podcast by cpp developers for cpp developers
+* Soft Skills Engineering - great humor and soft skills bump from 2 guys
+* Advance Tech Podcast - great interviews with great people
+* [Bananas and Lenses](http://bananasandlenses.net/) - Haskell carry
+* DevOps Cafe
+* Giant Bombcast
+* [FLOSS](https://twit.tv/shows/floss-weekly)
+* Noise Security Bit
+* Programming Throwdown
 
-* [Radio-T](http://www.radio-t.com/)
-* [DevZen](http://devzen.ru/)
-* [CTO cast](http://ctocast.com/)
-* [Razbor Poletov](http://razbor-poletov.com/)
-
-#### Eng
+### Other podcasts
 
 * [the ChangeLog](https://changelog.com/)
 * [Pragmatic](https://pragprog.com/podcasts)
-* [FLOSS](https://twit.tv/shows/floss-weekly)
 * [Software Engineering Radio](http://www.se-radio.net/)
-
-#### Lang
-
-* [RadioJS about FrontEnd and a lot of buzz words included](http://radiojs.ru/)
 * [GoLang show](http://golangshow.com/)
 * [Java Posse](http://javaposse.com/)
-* [About Haskell](http://bananasandlenses.net/)
+* SDCast
 
-### My lovely blogs
+### Guys to read
 
 * [Baron Schwartz, Head of VividCortex on all around time-series dbs](http://www.xaprb.com/)
 * [Kyle Kingsbury about Distributed systems, linearization and consistency](https://aphyr.com/)
@@ -54,7 +48,7 @@ p.s. I am a fan of twitter, facebook, google, amazon open source stuff
 * [Brave New Geek - Introspections of a software engineer](http://bravenewgeek.com/)
 * [Dan Luu - Hardware/Software Engineer at Microsoft](http://danluu.com/)
 
-### You can find me at:
+### Find me:
 
 * [GitHub](http://github.com/sitano)
 * [Gist](https://gist.github.com/sitano)
@@ -63,7 +57,7 @@ p.s. I am a fan of twitter, facebook, google, amazon open source stuff
 
 ## PS
 
-Have questions or suggestions? Feel free to [ask me on Twitter](https://twitter.com/JohnKoepi).
+Feel free to [reach me on Twitter](https://twitter.com/JohnKoepi).
 
 Thanks for reading!
 
