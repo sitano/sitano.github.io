@@ -124,7 +124,8 @@ v63 = OffPtr <*int> [32] v2         ; arg4 - z.ptr
 v66 = OffPtr <**[]byte> [40] v2     ; arg5 - z.len
 v68 = OffPtr <*int> [48] v2         ; arg6 - z.cap
 v70 = OffPtr <*int> [56] v2         ; arg7
-v90 = OffPtr <**map.iter[S]struct {}> [0] v2 ; ptr to arg0
+v90 = OffPtr <**map.iter[S]struct {}> [0] v2
+                                    ; arg0 ptr to iter map ref
 Plain → b2                          ; go to block b2
                                     ; straight away
 
@@ -188,6 +189,7 @@ v30 = NeqPtr <bool> v28 v29         ; v30 = v28<*S> != v29<nil>
 If v30 → b3 b5 (likely)             ; goto {b3} if v30 == true, and
                                     ; to {b5} if not
 
+> b2:
 > var key *S = .autotmp_6.key
 > if S != nil {
 >   goto {b3}
@@ -195,6 +197,9 @@ If v30 → b3 b5 (likely)             ; goto {b3} if v30 == true, and
 >   goto {b5}
 > }
 
+00029 MOVQ	"".z.cap-120(SP), AX
+00030 MOVQ	"".z.len-128(SP), CX
+00031 MOVQ	"".z.ptr-112(SP), DX
 00032 MOVQ	""..autotmp_6-96(SP), BX
 00033 TESTQ	BX, BX
 00034 JEQ	76
@@ -223,7 +228,8 @@ v42 = IsSliceInBounds <bool> v39 v41; 0 <= arg0(0) <= arg1(8). arg1 is
 If v42 → b6 b7 (likely)             ; continue to {b6}, or
                                     ;   panic in {b7} if !{v42}
 
-> s = iter.key                      ; where iter.key is unsafe.Pointer
+> b3:
+> *s = *iter.key                    ; where iter.key is unsafe.Ptr(*S)
 > if s.b == nil {
 >    panic("no next key")
 > }
@@ -240,18 +246,21 @@ If v42 → b6 b7 (likely)             ; continue to {b6}, or
 
 b4: ← b9                            ; step iterator next item
 v89 = Addr <*map.iter[S]struct {}> {.autotmp_6} v2
-v91 = Copy <mem> v87
+                                    ; v89 = addr of {.autotmp_6} at v2
+v91 = Copy <mem> v87                ; v91 = copy last mem state
 v92 = Store <mem> {*map.iter[S]struct {}} v90 v89 v91
+                                    ; put map iter ptr on stack top
 v93 = StaticCall <mem> {runtime.mapiternext} [8] v92
-Plain → b2
+                                    ; call for next map iter item
+Plain → b2                          ; goto b2
 
 00025 LEAQ	""..autotmp_6-96(SP), AX
 00026 MOVQ	AX, (SP)
 00027 PCDATA	$0, $2
+; func mapiternext(&.autotmp_6)
 00028 CALL	runtime.mapiternext(SB)
-00029 MOVQ	"".z.cap-120(SP), AX
-00030 MOVQ	"".z.len-128(SP), CX
-00031 MOVQ	"".z.ptr-112(SP), DX
+
+> runtime.mapiternext(&.autotmp_6)
 
 ======================================================================
 
