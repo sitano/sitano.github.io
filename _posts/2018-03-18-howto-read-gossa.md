@@ -83,14 +83,15 @@ v13 = Load <*S> v12 v11             ; Pop stack value [0:8].
                                     ; stack[0:8]
 
 > at this point it is equivalent to
-> v13 := new(S)
+> var z [][]byte
+> s := new(S)
 
 v14 = Addr <*map.iter[S]struct {}> {.autotmp_6} v2 ; Get address
                                     ; of the local var {.autotmp_6}
                                     ; which will store map iter ptr.
 v15 = VarDef <mem> {.autotmp_6} v11 ; Define new variable {.autotmp_6}
 v16 = Zero <mem> {map.iter[S]struct {}} [96] v14 v15 ; Init with zeroe
-                                    ; {.autotmp_6} of len 96 bytes.
+                                    ; {.autotmp_6} of len 96 byte1
 
 > var .autotmp_6 map.iter[S]struct{}
 
@@ -264,26 +265,31 @@ Plain → b2                          ; goto b2
 
 ======================================================================
 
-b5: ← b2
-v94 = Copy <mem> v27
-v95 = VarKill <mem> {.autotmp_6} v94
-v96 = Copy <[][]byte> v99
-v97 = VarDef <mem> {~r1} v95
-v98 = Store <mem> {[][]byte} v5 v96 v97
-Ret v98
+b5: ← b2                            ; block to return from func
+v94 = Copy <mem> v27                ; v94 = copy map iter mem state
+v95 = VarKill <mem> {.autotmp_6} v94; dealloc local var {.autotmp_6}
+v96 = Copy <[][]byte> v99           ; v96 = copy {z} mem state
+v97 = VarDef <mem> {~r1} v95        ; v97 = return return value [][]b
+v98 = Store <mem> {[][]byte} v5 v96 v97 
+                                    ; put {z} to return val {~r1}
+Ret v98                             ; return with mem state v98 {~r1}
+
+> return z
 
 ======================================================================
 
-b6: ← b3
-v45 = Sub64 <int> v41 v39
-v46 = SliceMake <[]byte> v38 v45 v45
-v47 = Copy <[][]byte> v99
-v48 = SlicePtr <*[]byte> v47
-v49 = SliceLen <int> v47
-v50 = SliceCap <int> v47
-v52 = Add64 <int> v49 v51
-v53 = Greater64 <bool> v52 v50
-If v53 → b8 b9 (unlikely)
+b6: ← b3                            ; make new slice []byte
+v45 = Sub64 <int> v41 v39           ; v45 = arg0 - arg1 = 8 - 0 = 8
+v46 = SliceMake <[]byte> v38 v45 v45; v46 = new slice of []byte, len 8
+v47 = Copy <[][]byte> v99           ; v47 = copy {z} slice [][]byte
+v48 = SlicePtr <*[]byte> v47        ; v48 = z.ptr
+v49 = SliceLen <int> v47            ; v49 = z.len
+v50 = SliceCap <int> v47            ; v50 = z.cap
+v52 = Add64 <int> v49 v51           ; v52 = z.len + 1
+v53 = Greater64 <bool> v52 v50      ; v53 = (z.len + 1) > z.cap
+If v53 → b8 b9 (unlikely)           ; if v53 true
+                                    ;   goto {b8} to growslice, else
+                                    ;   goto {b9} to append element
 
 ======================================================================
 
@@ -296,22 +302,27 @@ Exit v44
 ======================================================================
 
 b8: ← b6                            ; grow slice
-v55 = Copy <mem> v37
-v56 = Store <mem> {*uint8} v9 v54 v55
-v58 = Store <mem> {*[]byte} v57 v48 v56
-v60 = Store <mem> {int} v59 v49 v58
-v62 = Store <mem> {int} v61 v50 v60
-v64 = Store <mem> {int} v63 v52 v62
+v55 = Copy <mem> v37                ; copy cur key S mem state
+v56 = Store <mem> {*uint8} v9 v54 v55 ; put {type.[]uint8} addrto arg0
+v58 = Store <mem> {*[]byte} v57 v48 v56 ; put {z.ptr} to arg1
+v60 = Store <mem> {int} v59 v49 v58 ; put {z.len} to arg2
+v62 = Store <mem> {int} v61 v50 v60 ; put {z.cap} to arg3
+v64 = Store <mem> {int} v63 v52 v62 ; put {z.len+1} new size to arg4
+; func growslice(typ *byte, old []any, cap int) (ary []any)
 v65 = StaticCall <mem> {runtime.growslice} [64] v64
-v67 = Load <*[]byte> v66 v65
-v69 = Load <int> v68 v65
-v71 = Load <int> v70 v65
-v72 = Add64 <int> v69 v51
-Plain → b9
+                                    ; call runtime.growslice with args
+                                    ; of 64 bytes long
+v67 = Load <*[]byte> v66 v65        ; load new z.ptr
+v69 = Load <int> v68 v65            ; load new z.len
+v71 = Load <int> v70 v65            ; load new z.cap
+v72 = Add64 <int> v69 v51           ; v72 = z.len + 1
+Plain → b9                          ; goto to append
+
+> runtime.growslice([]uint8.(type), z, len(z) + 1)
 
 ======================================================================
 
-b9: ← b6 b8                         ; append element?
+b9: ← b6 b8                         ; append element
 v74 = Phi <*[]byte> v48 v67
 v75 = Phi <int> v52 v72
 v76 = Phi <int> v50 v71
@@ -343,9 +354,8 @@ TO BE DONE
 Links
 ===
 
-- [](https://github.com/golang/tools/blob/master/go/ssa/doc.go)
-- /go/src/cmd/compile/internal/gc/ssa_test.go - GOSSAFUNC handler
-- /go/src/cmd/compile/internal/ssa/\*
-- /go/src/cmd/compile/internal/ssa/gen/genericOps.go - a lot of instructions
-  described here.
-- [](https://golang.org/pkg/cmd/compile/internal/ssa/) - docs
+- [go/ssa/doc.go](https://github.com/golang/tools/blob/master/go/ssa/doc.go)
+- [GOSSAFUNC handler](https://github.com/golang/go/tree/master/src/cmd/compile/internal/gc/ssa_test.go)
+- [cmd/compile/internal/ssa](https://github.com/golang/go/tree/master/src/cmd/compile/internal/ssa/\*)
+- [instructions defs](https://github.com/golang/go/tree/master/src/cmd/compile/internal/ssa/gen/genericOps.go)
+- [golang internal ssa docs](https://golang.org/pkg/cmd/compile/internal/ssa/)
