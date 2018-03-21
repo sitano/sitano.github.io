@@ -111,7 +111,7 @@ v23 = Store <mem> {*map.iter[S]struct {}} v22 v21 v20 ; [stack+16]=
 v24 = StaticCall <mem> {runtime.mapiterinit} [24] v23 ; init map
                                     ; iter struct
 
-> runtime.mapiterinit(map[S]struct{}.(type), m, .autotmp_6)
+> runtime.mapiterinit(map[S]struct{}.(type), m, &.autotmp_6)
 
 v29 = ConstNil <*S>                 ; const nil S ptr lval
 v39 = Const64 <int> [0]             ; int64 = 0 lval
@@ -222,7 +222,7 @@ v36 = Copy <*S> v100                ; v36 = copy ptr of local var
                                     ;   for holding cur S key val
 v37 = Move <mem> {S} [8] v36 v34 v33; put cur key val (v34) to the v36
 v38 = OffPtr <*[8]byte> [0] v36     ; v38 = ptr to v36[0] (ptr)
-v40 = NilCheck <void> v38 v37       ; v40 = check v38 for nil val
+v40 = NilCheck <void> v38 v37       ; v40 = check v38 (s.b) for nil val
                                     ;   Panics if arg0 is nil.
 v42 = IsSliceInBounds <bool> v39 v41; 0 <= arg0(0) <= arg1(8). arg1 is
                                     ;   guaranteed >= 0.
@@ -230,6 +230,9 @@ If v42 → b6 b7 (likely)             ; continue to {b6}, or
                                     ;   panic in {b7} if !{v42}
 
 > b3:
+> if iter.key == nil {
+>    panic("key is nil")
+> }
 > *s = *iter.key                    ; where iter.key is unsafe.Ptr(*S)
 > if s.b == nil {
 >    panic("no next key")
@@ -255,13 +258,13 @@ v93 = StaticCall <mem> {runtime.mapiternext} [8] v92
                                     ; call for next map iter item
 Plain → b2                          ; goto b2
 
+> runtime.mapiternext(&.autotmp_6)
+
 00025 LEAQ	""..autotmp_6-96(SP), AX
 00026 MOVQ	AX, (SP)
 00027 PCDATA	$0, $2
 ; func mapiternext(&.autotmp_6)
 00028 CALL	runtime.mapiternext(SB)
-
-> runtime.mapiternext(&.autotmp_6)
 
 ======================================================================
 
@@ -276,11 +279,17 @@ Ret v98                             ; return with mem state v98 {~r1}
 
 > return z
 
+00076 MOVQ	DX, "".~r1+8(SP)
+00077 MOVQ	CX, "".~r1+16(SP)
+00078 MOVQ	AX, "".~r1+24(SP)
+00079 RET
+
 ======================================================================
 
 b6: ← b3                            ; make new slice []byte
 v45 = Sub64 <int> v41 v39           ; v45 = arg0 - arg1 = 8 - 0 = 8
 v46 = SliceMake <[]byte> v38 v45 v45; v46 = new slice of []byte, len 8
+                                    ;   pointing to {s.b} memory
 v47 = Copy <[][]byte> v99           ; v47 = copy {z} slice [][]byte
 v48 = SlicePtr <*[]byte> v47        ; v48 = z.ptr
 v49 = SliceLen <int> v47            ; v49 = z.len
@@ -291,6 +300,24 @@ If v53 → b8 b9 (unlikely)           ; if v53 true
                                     ;   goto {b8} to growslice, else
                                     ;   goto {b9} to append element
 
+> z0 := s.b[:8]
+> if len(z) + 1 > cap(z) {
+>   goto {b8}
+> } else {
+>   goto {b9}
+> }
+
+00042 MOVQ	DX, "".z.ptr-112(SP)
+00043 MOVQ	BX, "".z.len-128(SP)
+00044 MOVQ	AX, "".z.cap-120(SP)
+00045 LEAQ (CX)(CX*2), CX
+00046 MOVQ	$8, 8(DX)(CX*8)
+00047 MOVQ	$8, 16(DX)(CX*8)
+00048 MOVL runtime.writeBarrier(SB), DI
+00049 LEAQ (DX)(CX*8), R8
+00050 TESTL DI, DI
+00051 JNE	54
+
 ======================================================================
 
 b7: ← b3                            ; panic for bad slice
@@ -298,6 +325,17 @@ v43 = Copy <mem> v37                ; copy map iter mem state after
                                     ;   reading cur key in {b3}
 v44 = StaticCall <mem> {runtime.panicslice} v43 
 Exit v44
+
+> runtime.panicslice()
+
+00052 MOVQ	SI, (DX)(CX*8)
+00053 JMP	25
+
+00054 MOVQ	R8, (SP)
+00055 MOVQ	SI, 8(SP)
+00056 PCDATA $0, $2
+00057 CALL runtime.writebarrierptr(SB)
+00058 JMP	25
 
 ======================================================================
 
@@ -320,36 +358,104 @@ Plain → b9                          ; goto to append
 
 > runtime.growslice([]uint8.(type), z, len(z) + 1)
 
+00059 MOVQ	CX, "".z.len-128(SP)
+00060 LEAQ type.[]uint8(SB), SI
+00061 MOVQ	SI, (SP)
+00062 MOVQ	DX, 8(SP)
+00063 MOVQ	CX, 16(SP)
+00064 MOVQ	AX, 24(SP)
+00065 MOVQ	BX, 32(SP)
+00066 PCDATA $0, $1
+00067 CALL runtime.growslice(SB)
+
 ======================================================================
 
 b9: ← b6 b8                         ; append element
-v74 = Phi <*[]byte> v48 v67
-v75 = Phi <int> v52 v72
-v76 = Phi <int> v50 v71
-v81 = Phi <mem> v37 v65
-v73 = Copy <[]byte> v46
-v77 = PtrIndex <*[]byte> v74 v49
-v78 = PtrIndex <*[]byte> v77 v39
-v79 = SliceLen <int> v73
-v80 = OffPtr <*int> [8] v78
-v82 = Store <mem> {int} v80 v79 v81
-v83 = SliceCap <int> v73
-v84 = OffPtr <*int> [16] v78
-v85 = Store <mem> {int} v84 v83 v82
-v86 = SlicePtr <*uint8> v73
+v74 = Phi <*[]byte> v48 v67         ; v74 = z.ptr
+v75 = Phi <int> v52 v72             ; v75 = z.len + 1
+v76 = Phi <int> v50 v71             ; v76 = z.cap
+v81 = Phi <mem> v37 v65             ; latest mem state
+v73 = Copy <[]byte> v46             ; copy new slice of len 8
+v77 = PtrIndex <*[]byte> v74 v49    ; v77 = z[z.len] ptr of el ix
+v78 = PtrIndex <*[]byte> v77 v39    ; v78 = z[z.len]+0 ptr of el ix
+v79 = SliceLen <int> v73            ; v79 = new slice len (8)
+v80 = OffPtr <*int> [8] v78         ; v80 = ptr to z last el
+v82 = Store <mem> {int} v80 v79 v81 ; z[z.len]+8 = z0.len
+v83 = SliceCap <int> v73            ; z0.cap 8
+v84 = OffPtr <*int> [16] v78        ; v84 = z[z.len]+16 ptr
+v85 = Store <mem> {int} v84 v83 v82 ; z[z.len]+16 = z0.cap 8
+v86 = SlicePtr <*uint8> v73         ; v86 = z0.ptr
 v87 = Store <mem> {*uint8} v78 v86 v85
+                                    ; z[z.len]+0 = z0.ptr
 v88 = SliceMake <[][]byte> v74 v75 v76
-v101 = Copy <*S> v36
-Plain → b4
+                                    ; make {z} grow by 1
+v101 = Copy <*S> v36                ; copy {s} local key var
+Plain → b4                          ; goto {b4}
+
+> z[z.len] = z0
+> z = z[:len(z)+1]
 
 name z[[][]byte]: v7 v47 v88 v96 v99
 name &k[*S]: v13 v36 v100 v101
+
+00068 MOVQ 40(SP), DX
+00069 MOVQ 48(SP), AX
+00070 MOVQ 56(SP), CX
+00071 LEAQ 1(AX), BX
+00072 MOVQ "".&k-104(SP), SI
+00073 MOVQ	CX, AX
+00074 MOVQ "".z.len-128(SP), CX
+00075 JMP	42
+
 ```
 
 Conclusion
 ===
 
-TO BE DONE
+The original `keys` function rolls out into something like:
+
+```
+func keys(m map[S]struct{}) [][]byte {
+    var z [][]byte
+
+    var iter map.iter[S]struct{}
+    runtime.mapiterinit(map[S]struct{}.(type), m, &iter)
+
+    s := new(S)
+    for iter.key != nil {
+        if iter.key == nil {
+           panic("key is nil")
+        }
+        *s = *iter.key
+        if s.b == nil {
+           panic("no next key")
+        }
+
+        runtime.mapiternext(&iter)
+
+        z0 := s.b[:8]
+        if len(z) + 1 > cap(z) {
+            runtime.growslice([]uint8.(type), z, len(z) + 1)
+        }
+
+        z[len(z)] = z0
+        z = z[:len(z)+1]
+    }
+
+    return z
+}
+```
+
+Compiler allocated separate local variable for keeping
+local state of the next item from the iterator on each
+iteration of for-range loop. Slice which is appending
+to the {z} slice is created against the same memory area
+{s.b}. That is why function ends up with a slice {z}
+containing the same values.
+
+Go SSA does not differ much from the target assembly,
+although blocks and instructions got reduced and sorted
+during various optimization passes.
 
 Links
 ===
