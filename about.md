@@ -5,18 +5,17 @@ title: About
 
 ### Ivan Prisyazhnyy.
 
-Linux open source backend engineer, passionate about Distributed Systems,
-Open Source, Programming Paradigms, and Storage engines.
+I am backend systems software engineer and a fan of Linux, Open Source,
+Distributed Systems, Programming Paradigms, and Storage engines.
 
-My hobby is reverse engineering and learning. I am fan of Twitter, Facebook,
-Google and Amazon OSS, Unix, Colemak, Vim/Emacs and mechanical keyboards.
+In a free time I reverse engineer something, read whitepapers or play guitar.
+I like what Twitter, Facebook, Google and Amazon OSS guys do.
 
-I am fond of fitness and boxing, the same much I am trying to fit my
-perfectionism into reasonable constraints.
+In all the rest I am trying to fit my perfectionism into reasonable constraints.
 
 p.s. _:w_
 
-### Profound podcasts
+### Podcasts
 
 * DevZen - dist systems and various stuff
 * Razbor Poletov - mostly ru java community
@@ -29,36 +28,28 @@ p.s. _:w_
 * [FLOSS](https://twit.tv/shows/floss-weekly)
 * Noise Security Bit
 * Programming Throwdown
-
-### Other podcasts
-
 * [the ChangeLog](https://changelog.com/)
 * [Pragmatic](https://pragprog.com/podcasts)
 * [Software Engineering Radio](http://www.se-radio.net/)
 * [GoLang show](http://golangshow.com/)
 * [Java Posse](http://javaposse.com/)
-* SDCast
 
-### Guys to read
+### Blogs
 
 * [Baron Schwartz, Head of VividCortex on all around time-series dbs](http://www.xaprb.com/)
 * [Kyle Kingsbury about Distributed systems, linearization and consistency](https://aphyr.com/)
 * [Stevey's Drunken Blog Rants about Programming life](https://sites.google.com/site/steveyegge2/blog-rants)
+* [Steve Yegge Next](http://steve-yegge.blogspot.co.uk/)
 * [Brendan D. Gregg about Linux Perfomance](http://www.brendangregg.com/)
 * [Brave New Geek - Introspections of a software engineer](http://bravenewgeek.com/)
 * [Dan Luu - Hardware/Software Engineer at Microsoft](http://danluu.com/)
+* [Murat](http://muratbuffalo.blogspot.co.uk/)
 
-### Find me:
+### Social:
 
 * [GitHub](http://github.com/sitano)
 * [Gist](https://gist.github.com/sitano)
 * [Twitter](http://twitter.com/JohnKoepi)
 * [Linkedin](http://ru.linkedin.com/in/prisyaznyy/)
-
-## PS
-
-Feel free to [reach me on Twitter](https://twitter.com/JohnKoepi).
-
-Thanks for reading!
 
 {% include analytics %}
