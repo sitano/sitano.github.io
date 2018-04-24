@@ -5,10 +5,10 @@ title: About
 
 ### Ivan Prisyazhnyy.
 
-I am backend systems software engineer and a fan of Linux, Open Source,
+I am a backend systems software engineer and a fan of Linux, Open Source,
 Distributed Systems, Programming Paradigms, and Storage engines.
 
-In a free time I reverse engineer something, read whitepapers or play guitar.
+In free time, I reverse engineer something, read whitepapers or play guitar.
 I like what Twitter, Facebook, Google and Amazon OSS guys do.
 
 In all the rest I am trying to fit my perfectionism into reasonable constraints.
