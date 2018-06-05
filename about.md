@@ -44,6 +44,7 @@ p.s. _:w_
 * [Brave New Geek - Introspections of a software engineer](http://bravenewgeek.com/)
 * [Dan Luu - Hardware/Software Engineer at Microsoft](http://danluu.com/)
 * [Murat](http://muratbuffalo.blogspot.co.uk/)
+* [/dev/null on Distributed Systems](https://simbo1905.blog/)
 
 ### Social:
 
