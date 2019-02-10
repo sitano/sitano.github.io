@@ -54,3 +54,5 @@ TODO
 - how different types of ID structured
 - how messages/chats structured inside of the EVL
 - described types of events
+- on limitations and rotation of the EVL
+- how exactly IDs are encoded in the transport level
