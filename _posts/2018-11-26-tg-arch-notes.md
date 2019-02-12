@@ -72,8 +72,12 @@ have successfully received every message in order. Application level
 ACK allows to use any of the available protocols for the networking
 (i.e. UDP).
 
+TL network messages are ordered with monotonically increasing IDs.
+TL queue is not persistent as serves the socket buffer purposes.
+
 TODO: what to they use now?
 TODO: how the IDs of the TL are encoded?
+TODO: how the RPC calls are implemented on TL level?
 
 TODO
 ===
