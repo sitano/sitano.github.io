@@ -6,32 +6,47 @@ title: Notes on Telegram (TG) instant messaging (IM) system data protocol
 The protocol structure was reverse engineered from the prototypes of the
 TG protocol and it's open source clients.
 
-Telegram uses encapsulated append-only logs (AOL) of events to build
+Telegram is an instance messaging (IM) platform. It consists of a users
+who talk to each other in a chat rooms which can be public or private.
+The problems in the design of the chat systems are fast and light
+clients (devices) synchronization over the same view of the chat histories
+and their states, distribution (routing) of the messages flows and reducing
+overall overhead of storage keeping operational latency low.
+
+Telegram uses encapsulated append-only logs (AOL) of events to model
 robust replication machine. Multiple devices can agree on a single view
-of the data (snapshot of the chats state) consuming this event log and
+of the data (snapshot of the chats state) consuming an event log and
 detect their synchronization state with O(1).
 
 ```
 /------------------------------------------------------------------
 |         |         |
-| event 1 | event 2 | event 3 | ...
+| event 1 | event 2 | event 3 | ...         | event N |
 |         |         |
 \------------------------------------------------------------------
               ^                                  ^
               |                                  |
               read ptr                           last event ptr
+
+Telegram protocol.
+Replication machine based on ordered log of events.
 ```
 
-This events log (EVL) is persistent and unique for each client. Thus, the
-only data clients need to consume to get the latest data view is to
-load and consume this events log to the end. All events has an associated
-monotonically increasing ID. The amount of unsynced state may be expressed
-as a difference between known state and the last event in the log:
-`last_event_id - device_read_event_id`. This design allows to:
+This event log (EVL) is persistent (at least to some extent) and unique
+for each user (single log per multiple clients/devices). It's implemented
+as a ring buffer with a 32 bit events space. Clients consume tail of
+the EVL from the known point to the end of the tail to get consistent
+data view. All events has an associated monotonically increasing ID.
+The volume of unsynced state may be expressed as a difference between
+known state and the latest event in the log:
+`last_event_id - device_read_event_id`.
 
+This design allows to:
+
+- organize replication in a simple lightweight and reliable way.
 - synchronize data with a single RPC call (load the EVL tail) really quick;
+- survive disconnections and bad network with little overhead;
 - count unread events/messages for O(1);
-- organize replicate in a simple and reliable way.
 
 Then, the EVL has layered structure it self:
 
@@ -43,9 +58,22 @@ Then, the EVL has layered structure it self:
 |            Application-level events log             ||        |
 \-----------------------------------------------------/\--------/
 |                                                               |
-|            Transport-level events log                         |
+| In-house AES based encryption                                 |
+| ------------------------------------------------------------- |
+| Transport-level messages                                      |
 \---------------------------------------------------------------/
 ```
+
+Transport level (TL) has an output queue on the server side
+per client (device). All application level events (messages) are
+encapsulated into the transport level events (messages). On a
+transport level clients explicitly acknowledge (ACK) that they
+have successfully received every message in order. Application level
+ACK allows to use any of the available protocols for the networking
+(i.e. UDP).
+
+TODO: what to they use now?
+TODO: how the IDs of the TL are encoded?
 
 TODO
 ===
