@@ -72,8 +72,25 @@ have successfully received every message in order. Application level
 ACK allows to use any of the available protocols for the networking
 (i.e. UDP).
 
-TL network messages are ordered with monotonically increasing IDs.
+TL network messages have ordered monotonically increasing IDs.
 TL queue is not persistent as serves the socket buffer purposes.
+
+```
+Transport-level message ID structure
+
+/63<------------------------64 bits---------------------------0\
+|63                          20                               0|
+| sign bit = 0 | id = 43 bits |   full type mask = 17 bits 0 + |
+|                             |       type flag = 3 lowers bit |
+\--------------------------------------------------------------/
+
+Flags:
+- OK     = 000
+- UNSENT = 001
+- LOCAL  = 002
+
+uint64_t ID >= 0
+```
 
 TODO: what to they use now?
 TODO: how the IDs of the TL are encoded?
