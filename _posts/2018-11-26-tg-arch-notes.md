@@ -92,16 +92,51 @@ Flags:
 uint64_t ID >= 0
 ```
 
-TODO: what to they use now?
-TODO: how the IDs of the TL are encoded?
-TODO: how the RPC calls are implemented on TL level?
-
-TODO
+RPC
 ===
 
-- describe how EVL levels structured and what they do
-- how different types of ID structured
-- how messages/chats structured inside of the EVL
-- described types of events
-- on limitations and rotation of the EVL
-- how exactly IDs are encoded in the transport level
+RPC is implemented as an asynchronous system of events running over a
+transport level. Each RPC query has an Id for which the client
+awaits a result with status. Status can be error or ok. Client
+registers waiting handlers for specific Ids when making a requests.
+For handling waiting handlers simple vector is used in TDLib,
+besides the actors model for all other running state machines.
+
+RPC queries IDs are usual monotonically increasing sequence of 
+natural numbers starting from 1.
+
+RPC net layer uses gzip for compressing bodies of the events.
+Events are usually of type: request, response_ok, response_error.
+
+Chats and messages
+===
+
+There are chat containers and dialogs. Dialogs are more about a
+chat container state with unreads and other specific data to the caller.
+
+Chat containers maybe of personal chats or groups. Super groups
+are handled separately as well as read-only channels.
+
+A chat message is identified globally with a pair of (chat_id, date).
+A chat message has also a `message id` which is a natural number
+monotonically increasing starting from 1. This message id exists
+outside of the chat container in which a message resides. Thus
+messages ids defines a total order of all messages received by the
+client/user from the beginning. These totally ordered stream of messages
+embed into event journal of the user (EVL).
+
+```
+/--------------------------------------------------------------\
+| msg(id=1, chat_id=100500) ->
+|  msg(id=2, chat_id=3) ->
+|   msg(id=3, chat_id=999) ->
+|    msg(id=4, chat_id=3) -> ...
+
+Message ID is a natural number counting all messages received by
+the user starting from 1.
+```
+
+Unreads maybe calculated for O(1).
+
+QPS and PTS
+===
