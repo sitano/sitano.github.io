@@ -111,32 +111,35 @@ Events are usually of type: request, response_ok, response_error.
 Chats and messages
 ===
 
-There are chat containers and dialogs. Dialogs are more about a
-chat container state with unreads and other specific data to the caller.
+There are chat containers and dialogs. Dialogs are about a
+chat container state with unreads and other specific data 
+related to the caller.
 
-Chat containers maybe of personal chats or groups. Super groups
+Chat containers may be of personal chats or groups. Super groups
 are handled separately as well as read-only channels.
 
 A chat message is identified globally with a pair of (chat_id, date).
 A chat message has also a `message id` which is a natural number
 monotonically increasing starting from 1. This message id exists
-outside of the chat container in which a message resides. Thus
-messages ids defines a total order of all messages received by the
-client/user from the beginning. These totally ordered stream of messages
-embed into event journal of the user (EVL).
+outside of the chat container in which a message resides. For each
+user, a message has it's own unique id.
+
+Messages IDs define a total order of all messages received by the
+client/user from the beginning. This totally ordered stream of messages
+embed into an event journal of the user (EVL).
 
 ```
 /--------------------------------------------------------------\
-| msg(id=1, chat_id=100500) ->
-|  msg(id=2, chat_id=3) ->
-|   msg(id=3, chat_id=999) ->
-|    msg(id=4, chat_id=3) -> ...
+| msg(id=1, chat_id=100500)  ->
+|   msg(id=2, chat_id=3)     ->
+|     msg(id=3, chat_id=999) ->
+|       msg(id=4, chat_id=3) -> ...
 
 Message ID is a natural number counting all messages received by
 the user starting from 1.
 ```
 
-Unreads maybe calculated for O(1).
+Unreads may be calculated for O(1).
 
 QPS and PTS
 ===
