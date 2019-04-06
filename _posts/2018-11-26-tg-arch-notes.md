@@ -110,7 +110,7 @@ Events are usually of type: request, response_ok, response_error.
 
 Chats and messages
 ===
-
+r
 There are chat containers and dialogs. Dialogs are about a
 chat container state with unreads and other specific data 
 related to the caller.
@@ -143,3 +143,19 @@ Unreads may be calculated for O(1).
 
 QPS and PTS
 ===
+
+These two are interesting. The [doc](https://core.telegram.org/constructor/updates.state)
+mentions them as follows:
+
+- `pts` is a number of events occurred in a text box. That sounds misleading.
+  It may stand for plain text sequence.
+- `qts` is a position in a sequence of updates in secret chats.
+
+`pts` is an Id of the message received by a user. The user EVL contains
+all messages starting from 1. To synchronize state client downloads the tail
+of the EVL based on `(pts, qts, date)` tuple. This allows to seeing whether
+a client has seen all the messages since the last disconnection.
+
+Both `pts` and `qts` are monotonically increasing sequences. `qts` starts from
+some unreasonable number. Messages are identified uniquely by `pts` or `qts`
+on a user level, and by a `Peer(chat_id, user_id) + date` on a global level.
