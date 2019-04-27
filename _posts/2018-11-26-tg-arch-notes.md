@@ -159,3 +159,54 @@ a client has seen all the messages since the last disconnection.
 Both `pts` and `qts` are monotonically increasing sequences. `qts` starts from
 some unreasonable number. Messages are identified uniquely by `pts` or `qts`
 on a user level, and by a `Peer(chat_id, user_id) + date` on a global level.
+
+Inbox and Outbox updates
+===
+
+Telegram uses separate entities to notify clients about what parts of the chats
+history are read. It tracks incoming and outcoming histories separately. For a
+client a set of incoming messages is a set of all messages of a chat history
+written by others. An outcoming set of messages is a subset of chat history
+which are written by a client. The client receives an event about what part of
+incoming history is read by others along the updated unread count:
+
+```
+// @description Incoming messages were read or number of unread messages has been
+// changed @chat_id Chat identifier @last_read_inbox_message_id Identifier of the
+// last read incoming message @unread_count The number of unread messages left in
+// the chat
+
+updateChatReadInbox
+    - chat_id:int53
+    - last_read_inbox_message_id:int53
+    - unread_count:int32 = Update;
+```
+
+A separate event on what part of the messages being sent by the client are read
+by others:
+
+```
+// @description Outgoing messages were read @chat_id Chat identifier
+// @last_read_outbox_message_id Identifier of last read outgoing message
+
+updateChatReadOutbox
+    - chat_id:int53
+    - last_read_outbox_message_id:int53 = Update;
+```
+
+Inbox and outbox messages ids are user-level pts numbers. Thus evaluating these
+events for every chat participant takes some effort for the backend system at they
+are individual and relative. It's interesting what advantage this organization
+provides over an absolute history updates. Having outbox updates separately
+requires read history full scan to detect to which users the updates must be sent (imho).
+Then the chat histories read ranges must be somehow mapped to the users events space.
+Or if it uses a scan of a user events journal for finding out whose messages are
+getting read when a user calls for readHistory, they still must be remapped to
+the others pts spaces.
+
+Channels and supergroups
+===
+
+They are fully separate entities. Their messages are no part of the users events
+journal (EVL). Big problem for implementing such big groups of 100000 users is in
+organization of the scalable fan-out and lazy updates.
