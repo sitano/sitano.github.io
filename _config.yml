@@ -14,13 +14,13 @@ permalink:        pretty
 
 # Setup
 title:            '@JohnKoepi'
-tagline:          'backend system engineer'
+tagline:          'on software engineering'
 description:      'Made by <a href="https://twitter.com/JohnKoepi" target="_blank">@JohnKoepi</a>.'
 url:              http://sitano.github.io
 baseurl:          '/'
 
 author:
-  name:           'Ivan Prisyazhnyy'
+  name:           'Ivan'
   url:            https://twitter.com/JohnKoepi
 
 analytics:
@@ -37,4 +37,4 @@ comments:
 version:          v1.1.0
 
 github:
-  repo:           https://github.com/sitano
+  repo:           https://github.com/sitano/sitano.github.io

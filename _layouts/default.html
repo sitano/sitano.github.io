@@ -5,15 +5,34 @@
 
   <body>
 
-    {% include sidebar.html %}
-
     <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
          content to avoid any CSS collisions with our real content. -->
     <div class="wrap">
       <div class="masthead">
         <div class="container">
           <h3 class="masthead-title">
-            <a href="/" title="Home">{{ site.title }}</a>
+            {% if page.url == "/" %}
+              <a href="/about/" title="@john.koepi - about">{{ site.title }}</a>
+            {% else %}
+              <a href="/" title="@john.koepi - home">{{ site.title }}</a>
+            {% endif %}
+            <a href="mailto: john.koepi at gmail dot com" title="email" class="svg-icon grey">@</a>
+            <a href="https://github.com/sitano" title="github">
+              <svg class="svg-icon grey">
+                <use xlink:href="/public/social-icons.svg#github"></use>
+              </svg>
+            </a>
+            <a href="https://twitter.com/JohnKoepi" title="twitter">
+              <svg class="svg-icon grey">
+                <use xlink:href="/public/social-icons.svg#twitter"></use>
+              </svg>
+            </a>
+            <a href="http://ru.linkedin.com/in/prisyaznyy/" title="linkedin">
+              <svg class="svg-icon grey">
+                <use xlink:href="/public/social-icons.svg#linkedin"></use>
+              </svg>
+            </a>
+            <a href="https://gist.github.com/sitano" title="gist" class="svg-icon grey">g</a>
             <small>{{ site.tagline }}</small>
           </h3>
         </div>
@@ -23,8 +42,6 @@
         {{ content }}
       </div>
     </div>
-
-    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
 
     <script>
       (function(document) {
