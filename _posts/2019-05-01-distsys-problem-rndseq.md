@@ -51,3 +51,4 @@ system would be? How would you test properties of such a program?
 [4]: https://www.cs.cornell.edu/fbs/publications/RecSafeLive.pdf "Recognizing safety and liveness by Bowen Alpern and Fred B. Schneider"
 [5]: https://lamport.azurewebsites.net/pubs/implementation.pdf   "The Implementation of Reliable Distributed Multiprocess Systems"
 [6]: https://amturing.acm.org/p558-lamport.pdf                   "Time, Clocks, and the Ordering of Events in a Distributed System by Leslie Lamport"
+[7]: http://book.mixu.net/distsys/single-page.html
