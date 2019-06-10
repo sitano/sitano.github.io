@@ -1,7 +1,27 @@
 ---
 layout: page
-title: Links
+title: Notes
 ---
+
+### Books on databases theory
+
+- Raghu Ramakrishnan and Johannes Gehrke. 2002. Database Management Systems (3 ed.). McGraw-Hill, Inc., New York, NY, USA.
+- Hector Garcia-Molina, Jeffrey D. Ullman, and Jennifer Widom. 2008. Database Systems: The Complete Book (2 ed.). Prentice Hall Press, Upper Saddle River, NJ, USA.
+- Elmasru-Navathe  “Fundamentals of Database Systems” from 1996
+- Database System Concepts. Seventh Edition. Avi Silberschatz, Henry F. Korth, S. Sudarshan 2018. McGraw-Hill. ISBN 9780078022159. 
+
+### Distributed transactions protocols
+
+- 2PL
+- Omid
+- Percolator
+- Granola + OLLP
+- RAMP
+- OCC + 2PC
+- Tapix
+- Janus
+- Calvin
+- SS2PL
 
 ### Podcasts
 
