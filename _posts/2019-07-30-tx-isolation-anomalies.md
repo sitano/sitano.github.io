@@ -301,7 +301,7 @@ program would $$ x = 2 $$.
 
 **G-single** or _Single Anti-dependency Cycle_: A history H
 exhibits phenomenon *G-single* if *DSG(H)* contains a cycle
-consisting of an anti-dependency (_rw_) and one or more dependency (_ww_, _rw_)
+consisting of an anti-dependency (_rw_) and one or more dependency (_ww_, _wr_)
 edges.
 
 *G-single* describes what is known as _read skew_ or _non-repeatable reads_.
