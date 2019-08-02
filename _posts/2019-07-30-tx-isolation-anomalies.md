@@ -314,8 +314,6 @@ the system, thus ended up seeing inconsistent state. $$ R_i(x) $$ read
 a version before the committed transaction $$ T_j $$ wrote a version of
 $$ W_j(y) $$ that was then read by $$ T_i: R_i(y) $$.
 
-In example:
-
 ```
   T1 --R(x=0)-----------------R(y=1)--(x=0,y=1) <-- broken
   T2 ---------W(x=1)---W(y=1)---------(x=1,y=1)
@@ -327,14 +325,32 @@ In example:
 
 **G2-item**: _Item Anti-dependency Cycles_. A history H exhibits
 phenomenon *G2-item* if *DSG(H)* contains a directed cycle having
-one or more item-anti-dependency (rw) edges.
+one or more item-anti-dependency (_rw_) edges.
 
 *G2-item* describes what is known as _write skew_.
 
 The level on which *G2-item* is disallowed called *PL-2.99* or
 _REPEATABLE READ_.
 
-![]({{ Site.url }}/public/tx_write_skew.png)
+![]({{ Site.url }}/public/tx_write_skew_item.png)
+
+In this example we have an invariant that only one of the
+objects may be enabled $$ x + y <= 1, \{x, y\} = \{0, 1\} $$.
+A transaction first reads both objects $$ (x, y) $$ and
+tries to enable only 1 of them. So the $$ T_i $$ reads
+$$ (x=0, y=0) $$ and writes $$ (x = 1) $$, and the $$ T_j $$
+$$ (x=0, y=0) $$ and writes $$ (y = 1) $$. In the end both
+commits and we end up with broken invariant $$ (x = 1, y = 1), x + y > 1 $$.
+
+This happens due to the presence of _rw_ edges in the _DSG(H)_:
+$$ R_i(y) -rw-> W_j(y) $$, $$ R_j(x) -rw-> W_j(x) $$.
+
+```
+  T1 --R(x=0,y=0)-------W(x=1)--------(x=1,y=0)
+  T2 --R(x=0,y=0)-------W(y=1)--------(x=0,y=1)
+  x  --0-----------------1------------1         | both
+  y  --0-----------------1------------1         | are 1
+```
 
 ### G2: Anti-Dependency Cycles (write skew on predicate read)
 
@@ -348,7 +364,27 @@ includes predicate reads.
 The level on which *G2* is disallowed called *PL-3* or
 _SERIALIZABLE_.
 
-![]({{ Site.url }}/public/tx_write_skew.png)
+![]({{ Site.url }}/public/tx_write_skew_predicate.png)
+
+Here we have a read-only transaction which observes reads
+from various states of the system. It reads $$ (x, y) $$
+using predicate $$ P $$, and then reads its sum $$ S $$ which
+must be $$ S = x + y $$. 
+
+Concurrently the second transaction writes new object $$ z $$
+that changes matches of predicate $$ P $$ and updates an object
+$$ S $$ to be $$ S = x + y + z $$. Then the first transaction
+reads $$ S = x + y + z $$ and ends up with invalid state
+observing: $$ (\{x, y\}, S = x + y + z) $$.
+
+```
+  T1 --R(P:x=1,y=1)-------------------R(S=3)-(x,y=1,z=3) <--
+  T2 --R(P:x,y)-----W(z=1)-W(S=x+y+z)--------(x,y,z=1,s=3)
+  x  --1-------------------------------------1
+  y  --1-------------------------------------1
+  z                 --1----------------------1
+  s  --2---------------------3---------------3
+```
 
 ### OTV: Observed Transaction Vanishes
 
@@ -360,9 +396,49 @@ anti-dependency (_rw_) edge from $$ T_i $$ to $$ T_j $$ and $$ T_j $$’s
 read from $$ y $$ precedes its read from $$ x $$.
 
 OTV occurs when a transaction observes part of another transaction’s
-updates but not all of them.
+updates but not all of them and then observed partial state may
+completely vanish (get out of existence).
 
 ![]({{ Site.url }}/public/tx_otv_anomaly.png)
+
+Speaking of the second example we have 3 transactions $$ T_i, T_j, T_k $$.
+$$ T_k $$ observes partially $$ T_i $$ results reading $$ R_k(y_0) $$
+which then completely vanishes being overwritten by the $$ T_j $$
+$$ W_j(y_1) $$ even before the $$ T_i $$ finishes (commits).
+
+Thus, $$ T_k $$ has observed partial state $$ y_0 \in (x_1, y_0) $$
+which then vanishes. $$ T_j $$ commits and sets $$ W_j(y_1) $$.
+
+```
+  T1 --W(x=1)---W(y=1)----c1-----------------(x=1,y=1)
+  T2 --------W(x=2)-------------W(y=2)-c2----(x=2,y=2)
+  T3 --------------R(x=2)-R(y=1)-------------(x=2,y=1)
+  x  --1-------2-----------------------------2      ^
+  y  -------------1---------------2----------2      \- y=1 not exists
+```
+
+SQL [[hermitage/postgres/otv](https://github.com/ept/hermitage/blob/master/postgres.md#observed-transaction-vanishes-otv)]:
+
+PostgreSQL "read committed" prevents Observed Transaction Vanishes (OTV):
+
+```sql
+create table test (id int primary key, value int);
+insert into test (id, value) values (1, 0), (2, 0);
+begin; set transaction isolation level read committed; -- T1
+begin; set transaction isolation level read committed; -- T2
+begin; set transaction isolation level read committed; -- T3
+update test set value = 1 where id = 1;  -- T1: W1(x=1)
+update test set value = 1 where id = 2;  -- T1: W1(y=1)
+update test set value = 2 where id = 1;  -- T2: W2(x=2) BLOCKS
+commit; -- T1. This unblocks T2
+select * from test where id = 1;         -- T3: R3(x=2)
+update test set value = 2 where id = 2;  -- T2: W2(y=2)
+select * from test where id = 2;         -- T3: R3(y=1)
+commit; -- T2
+select * from test where id = 2;         -- T3: R3(y=2)
+select * from test where id = 1;         -- T3: R3(x=2)
+commit; -- T3
+```
 
 ### IMP/PMP: Predicate-Many-Preceders
 
@@ -372,6 +448,15 @@ directly item-read-depends (_wr_) by $$ x $$ on more than one other transaction.
 
 IMP occurs if a transaction observes multiple versions of the same item
 (e.g., transaction Ti reads x1 and x2).
+
+![]({{ Site.url }}/public/tx_imp_anomaly.png)
+
+```
+  T1 --W(x=1)--------------------------------(x=1)
+  T2 -----------W(x=2)-----------------------(x=2)
+  T3 -----------------R(x=2)-R(x=1)----------(x={1,2})
+  x  --1----------2--------------------------
+```
 
 **Predicate-Many-Preceders (PMP)**. A history H exhibits
 the phenomenon *PMP* if, for all predicate-based reads
@@ -388,7 +473,82 @@ Both IMP and PMP relates to the _Snapshot_ isolation mode (
 a system provides Snapshot Isolation if it prevents phenomena
 _G0, G1a, G1b, G1c, PMP, OTV, and Lost Updates_).
 
-![]({{ Site.url }}/public/tx_imp_pmp_anomaly.png)
+![]({{ Site.url }}/public/tx_pmp_anomaly.png)
+
+#### First example
+
+$$ T_i $$ performs 2 consecutive predicate reads such that
+$$ P_0 = P_a \cap P_b $$. $$ T_j $$ changes matches of $$ P_0 $$
+writing new object $$ z $$.
+
+```
+  T1 --R(Pa:x=10,y=10)----R(Pb:x,y=10,z=20)--(x,y=10,z=20)
+  T2 ---------------W(z=20)------------------(z=20)
+  x  --10------------------------------------10
+  y  --10------------------------------------10
+  z                 --20---------------------15
+
+  Pa: n > 0
+  Pb: n mod 5 == 0
+  P0: n > 0 and n mod 5 == 0
+```
+
+SQL [[hermitage/postgres/pmp](https://github.com/ept/hermitage/blob/master/postgres.md#predicate-many-preceders-pmp)]:
+
+PostgreSQL "read committed" does not prevent Predicate-Many-Preceders (PMP):
+
+```sql
+create table test (id int primary key, value int);
+begin; set transaction isolation level read committed; -- T1
+begin; set transaction isolation level read committed; -- T2
+select * from test where value > 0;          -- T1. Returns nothing
+insert into test (id, value) values (1, 5);  -- T2
+commit; -- T2
+select * from test where value % 5 = 0;      -- T1. Returns the inserted row
+commit; -- T1
+```
+
+#### Second example
+
+$$ T_i $$ performs 2 consecutive predicate reads such that
+$$ P_0 = P_a \cap P_b $$. In between these predicate reads
+it install new version of object $$ x $$ which gets completely
+lost behind versions written by just committed $$ T_j $$.
+
+```
+  T1 --R(Pa:x=10,y=10)-W(x=11)-R(Pb:x,y=20)--(x,y=10,z=20)
+                          | blocks until c2
+                          \---------\
+                                    v
+  T2 ---------------W(x=20)-W(y=20)-c2-------(x=20)
+  x  --10-------------20----------------------20
+  y  --10---------------------20--------------20
+
+  Pa: n > 0
+  Pb: n mod 5 == 0
+  P0: n > 0 and n mod 5 == 0
+```
+
+Here $$ W_1(x = 11) $$ completely vanishes. This op could be
+delete.
+
+SQL [[hermitage/postgres/pmp](https://github.com/ept/hermitage/blob/master/postgres.md#predicate-many-preceders-pmp)]:
+
+PostgreRQL "read committed" does not prevent Predicate-Many-Preceders (PMP)
+for write predicates:
+
+```sql
+create table test (id int primary key, value int);
+insert into test (id, value) values (1, 10), (2, 20);
+insert into test (id, value) values (1, 10), (2, 20);
+begin; set transaction isolation level read committed; -- T1
+begin; set transaction isolation level read committed; -- T2
+update test set value = value + 10;  -- T1
+delete from test where value = 20;   -- T2, BLOCKS
+commit; -- T1. This unblocks T2
+select * from test where value = 20; -- T2, returns 1 => 20 (despite ostensibly having been deleted)
+commit; -- T2
+```
 
 ### Short-fork/ Long-fork (write-skew)
 
