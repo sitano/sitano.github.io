@@ -8,12 +8,8 @@ mathjax: true
 
 This document contains simple examples and explanations
 of transaction isolation anomalies well known since
-late 90's. The work based on papers [[1]], [[2]], [[3]].
-
-I draw these graphs for different cases to better
-understand the model that is defined at [[1]], [[3]]
-and I hope it will be helpful for someone else as a quick
-reminder of what these cases are about.
+the late '90s. The work based on papers [[1]], [[2]], [[3]].
+I hope it will be helpful for someone as a quick reference.
 
 List of covered anomalies include:
 
@@ -31,7 +27,7 @@ List of covered anomalies include:
 
 ## Model
 
-On database model and transactions I encourage you to go read [[1]], [[3]].
+On database model and transactions, I encourage you to read [[1]]-[[3]].
 
 In short:
 
@@ -40,7 +36,7 @@ In short:
 3. Transaction reads and writes objects in some specific order;
 4. An object has one or more versions.
 5. Transaction can read any version of an object.
-6. Transaction write generates new version of an object.
+6. Transaction write generates a new version of an object.
 
 ## Histories
 
@@ -54,10 +50,10 @@ order on committed versions of each object.
 
 ## Predicates
 
-There are predicate _reads_ and _writes_. They don't differ too much.
-A predicate is a boolean condition.
+There are predicate _reads_ and _writes_. A predicate
+is a boolean condition.
 
-For example, list all employees from sales department:
+For example, list all employees from _sales_ department:
 
     SELECT * FROM EMPLOYEE WHERE DEPT = SALES;
 
@@ -102,7 +98,13 @@ of version _0_ in history $$ H $$.
 In this example transaction $$ T_2 $$ reads an object $$ X $$
 written by the transaction $$ T_1 $$ and thus _item-read-depends_
 on $$ T_1 $$. This _wr_ dependency is outlined as an orange arrow
-in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$: $$ wr[x] $$.
+in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$: $$ wr[x] $$
+or $$ W_1(x_0) -wr[x]-> R_2(x_0) $$.
+
+```sql
+update test set value = 1 where id = 1;  -- Ti: Wi(x0)
+select * from test where id = 1;         -- Tj: Ri(x0)
+```
 
 ### Change the matches of predicate-based read (wr)
 
@@ -111,16 +113,24 @@ $$ T_i $$ installs $$ x_i $$ , $$ x_h $$ immediately precedes $$ x_i $$ in the v
 and $$ x_h $$ matches $$ P $$ whereas $$ x_i $$ does not or vice-versa. In this case,
 we also say that $$ x_i $$ changes the matches of the predicate-based read.
 
-This is another case of _wr_ dependency because first transaction
-installs a new object which is then appears in the second predicate-read
-by the second transaction. And by appearing it changes the predicate-read
-matching set.
+This is another case of _wr_ dependency when first transaction
+installs a new object which then appears in the predicate-read
+results executed by the second transaction. And by appearing,
+it changes the predicate-read matching set.
 
 ![]({{ Site.url }}/public/tx_read_predicate_dep_wr.png)
 
-Transaction $$ T_2 $$ sees only $$ X_0 $$ at the first read.
-And with the second read it observes $$ X_0 $$ and $$ X_1 $$
-just written by the $$ T1 $$.  
+Transaction $$ T_2 $$ sees $$ X_0 $$ at the first predicate-read.
+On the second predicate-read it observes nothing due to $$ X_0 $$ was
+just replaced with the $$ X_1 $$ by the $$ T1 $$ and
+$$ X_1 \notin Vset(P) $$: $$ W_1(x_1) -wr[x]-> R_2(P: Vset(P)) $$,
+$$ X_0 \in Vset(P), X_1 \notin Vset(P) $$.  
+
+```sql
+select * from test where value > 0;         -- Tj: Rj(P: Vset(P): x0)
+update test set value = 0 where id = 1;     -- Ti: Wi(x1)
+select * from test where value > 0;         -- Tj: Rj(P: Vset(P): {})
+```
 
 ### Write-dependency (ww)
 
@@ -129,15 +139,21 @@ installs a version $$ x_i $$ and $$ T_j $$ installs x’s next version
 (after $$ x_i $$) in the version order.
 
 The relation is called _ww_ because one transaction writes an object
-and the dependant transaction overwrites it. Straight forward outcome
-of this kind of conflicts are _dirty writes_.
+and the dependant transaction overwrites it. This is also called
+_dirty writes_.
 
 ![]({{ Site.url }}/public/tx_write_dep_ww.png)
 
 In this example transaction $$ T_2 $$ overwrites an object $$ X $$
 written by the transaction $$ T_1 $$ and thus _write-depends_
 on $$ T_1 $$. This _ww_ dependency is outlined as an orange arrow
-in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$: $$ ww[x] $$.
+in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$:
+$$ W_1(X_0) -ww[x]-> W_2(X_1) $$.
+
+```sql
+update test set value = 1 where id = 1;  -- Ti: Wi(x0)
+update test set value = 2 where id = 1;  -- Tj: Wj(x1)
+```
 
 ### Anti-dependency (rw)
 
@@ -154,7 +170,13 @@ and predicate-anti-dependency but its not significant.
 In this example transaction $$ T_2 $$ changes (writes) an object $$ X $$
 observed by the transaction $$ T_1 $$ and thus _item-anti-depends_
 on $$ T_1 $$. This _rw_ dependency is outlined as an orange arrow
-in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$: $$ rw[x] $$.
+in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$:
+$$ R_1(X_0) -rw[x]-> W_2(X_1) $$.
+
+```sql
+select * from test where id = 1;         -- Ti: Ri(x0)
+update test set value = 1 where id = 1;  -- Tj: Wj(x1)
+```
 
 ## Transaction anomalies
 
@@ -242,8 +264,8 @@ First example shows *ww-ww* and *wr-ww* cycles:
 
 ![]({{ Site.url }}/public/tx_g1c_circular_flow.png)
 
-Imagine your system invariant is only one of the buttons
-$$ {x, y} $$ are allowed to be enabled simultaneously.
+Imagine system invariant is defined that only one of the buttons
+$$ \{x, y\} $$ is allowed to be enabled simultaneously.
 This means allowed outcomes are $$ (0,0), (1,0), (0,1) $$,
 but not $$ (1,1) $$.
 
@@ -289,13 +311,13 @@ _Cursor Stability_.
 
 ![]({{ Site.url }}/public/tx_lost_update.png)
 
-In this example each of the transactions tries to increment a value
+In this example each transaction tries to increment a value
 $$ x $$. First of all a transactions reads an object state creating
 *rw* edge, and then writes back updated state _+1_ (*ww*). It happens to be
-that $$ T1 $$ and $$ T2 $$ ran concurrently end up $$ x = 1 $$ even
+that $$ T1 $$ and $$ T2 $$ ran concurrently ends up $$ x = 1 $$ even
 though they both were updating its state with _+1_. $$ W_2(x_1) $$
 update was lost after $$ W_1(x_2) $$. The right outcome for this
-program would $$ x = 2 $$.
+program would be $$ x = 2 $$.
 
 ### G-single: Single Anti-dependency Cycles (read skew)
 
@@ -404,10 +426,11 @@ completely vanish (get out of existence).
 Speaking of the second example we have 3 transactions $$ T_i, T_j, T_k $$.
 $$ T_k $$ observes partially $$ T_i $$ results reading $$ R_k(y_0) $$
 which then completely vanishes being overwritten by the $$ T_j $$
-$$ W_j(y_1) $$ even before the $$ T_i $$ finishes (commits).
+$$ W_j(y_1) $$ even before the $$ T_k $$ finishes (commits).
 
-Thus, $$ T_k $$ has observed partial state $$ y_0 \in (x_1, y_0) $$
-which then vanishes. $$ T_j $$ commits and sets $$ W_j(y_1) $$.
+Thus, $$ T_k $$ has observed partial state $$ y_0 \in T_i $$
+which then vanishes ($$ T_j $$ commits before $$ T_k $$ and
+sets $$ W_j(y_1) $$).
 
 ```
   T1 --W(x=1)---W(y=1)----c1-----------------(x=1,y=1)
