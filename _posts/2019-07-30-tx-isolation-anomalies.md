@@ -226,12 +226,12 @@ some object (maybe via a predicate) modified by $$ T $$.
 
 *G1a* is part of the *PL-2* isolation level or _READ COMMITTED_.
 
-It prevents a transaction T2 from committing if T2 has
-read the updates of a transaction that might later abort.
+It prevents a transaction from committing if it has read
+the updates of an aborted transaction.
 
 ![]({{ Site.url }}/public/tx_g1a_cascaded_aborts.png)
 
-In this example $$ T2 $$ has read an object $$ X $$ written
+In this example $$ T2 $$ has read an object $$ x $$ written
 by aborted transaction $$ T1 $$. Then $$ T2 $$ must be aborted.
 
 ### G1b: Intermediate Reads (dirty reads)
@@ -249,8 +249,8 @@ the objects.
 
 ![]({{ Site.url }}/public/tx_g1b_inter_reads.png)
 
-In this example $$ T2 $$ reads an intermediate state of
-object $$ X $$ of version $$ 0 $$ ($$ T2: R_2(x_0) $$) written by the $$ T1: W_1(x_0) $$
+In this example $$ T2 $$ reads an intermediate state (not final) of
+object $$ x_0 $$ ($$ R_2(x_0) $$) written by the $$ T1: W_1(x_0) $$
 and then overwritten with another version $$ x_1 $$. Then
 $$ T2 $$ must be aborted (can't be committed).
 
@@ -266,45 +266,53 @@ It ensures that if transaction $$ T2 $$ is affected by
 transaction $$ T1 $$, it does not affect $$ T1 $$, i.e., there
 is a unidirectional flow of information from $$ T1 $$ to $$ T2 $$.
 
-There 3 possible combinations of cycles consisting of *ww*, *wr*
+There 3 possible combinations of cycles consisting of $$ \{ww, wr\} $$
 dependencies. *g1c* does not consider cycles with *rw* edges.
 
 First example shows *ww-ww* and *wr-ww* cycles:
 
 ![]({{ Site.url }}/public/tx_g1c_circular_flow.png)
 
-Imagine system invariant is defined that only one of the buttons
-$$ \{x, y\} $$ is allowed to be enabled simultaneously.
-This means allowed outcomes are $$ (0,0), (1,0), (0,1) $$,
-but not $$ (1,1) $$.
+Imagine, a system invariant is defined such that only one button
+of $$ \{x, y\} $$ is allowed to be activated simultaneously.
+Allowed outcomes are $$ (0,0), (1,0), (0,1) $$, but not $$ (1,1) $$.
 
 Now the first transaction $$ T1 $$ will be disabling button $$ x $$
-and enabling button $$ y $$: $$ (x=0, y=1) $$, and the second
-transaction $$ T2 $$ will do the opposite - it will enable $$ x $$
+and activating button $$ y $$: $$ (x=0, y=1) $$, and the second
+transaction $$ T2 $$ will do the opposite - it will activate $$ x $$
 and disable $$ y $$: $$ (x=1, y=0) $$. That is exactly what is
 needed to create *ww-ww* cycle: $$ W_1(x_0)-ww->W_2(x_1) $$,
 $$ W_2(y_0) -ww->W1(y_1) $$.
 
-Operator which makes a decision on performing a second action
-is allowed to proceed only if the first button was enabled so
+The operator which makes a decision on the second action is
+allowed to proceed only if the first button was enabled so
 the $$ T2 $$ reads $$ x $$ at $$ R_2(w_0) $$ creating a *wr-ww*
 cycle.
 
-Now $$ T1 $$ and $$ T2 $$ depends on each other. Outcome of
-history H is $$ (x=1, y=1) $$ both buttons enabled that breaks
-our invariant.
+$$ T1 $$ and $$ T2 $$ depends on each other. Outcome of history H
+is $$ (x=1, y=1) $$ - both buttons are activated what breaks
+system invariant.
 
-In the second example there is a *wr-wr* cycle in which
-both transactions perform _write_ and _read_ on opposite
-objects _x_ and _y_ thus ending up with inconsistent final view:
+Second example shows a *wr-wr* cycle in which both transactions
+perform _write_ and _read_ on opposite objects _x_ and _y_
+ending up with inconsistent final view:
 
 ![]({{ Site.url }}/public/tx_g1c_circular_flow_2.png)
 
-$$ T1 $$ writes $$ (x=11) $$, and $$ T2 $$ writes $$ (y=22) $$.
-After that they read _y_ and _x_ correspondingly and see
-$$ T1: (x=11, y=20) $$, $$ T2: (x=10, y=22) $$. That means
-that in history H they observed partial state of the system
+Initial state of the system is $$ \{ x_0=10, y_0=20 \} $$.
+$$ T1 $$ writes $$ x_1=11 $$, and $$ T2 $$ writes $$ y_1=22 $$.
+Then they read _y_ and _x_ correspondingly and see
+$$ T1: (x=11, y=20) $$, $$ T2: (x=10, y=22) $$, while the actual
+system state is $$ \{ x_1=11, y_1=22 \} $$. That means
+in history H they both observed inconsistent state of the system
 what must be forbidden for the sake of the greater good.
+
+```
+  T1 ----W(x=11)-R(y=20)-c1----------(x=11,y=20)
+  T2 ----W(y=22)-R(x=10)-c2----------(x=22,y=10)
+  x  -10-----------------11----------11
+  y  -20-----------------22----------12
+```
 
 ### G-cursor: Lost Update
 
@@ -321,26 +329,26 @@ _Cursor Stability_.
 ![]({{ Site.url }}/public/tx_lost_update.png)
 
 In this example each transaction tries to increment a value
-$$ x $$. First of all a transactions reads an object state creating
-*rw* edge, and then writes back updated state _+1_ (*ww*). It happens to be
-that $$ T1 $$ and $$ T2 $$ ran concurrently ends up $$ x = 1 $$ even
-though they both were updating its state with _+1_. $$ W_2(x_1) $$
-update was lost after $$ W_1(x_2) $$. The right outcome for this
-program would be $$ x = 2 $$.
+$$ x $$. Each transactions reads $$ x $$, and then writes updated
+value back setting $$ x=x+1 $$. It happens to be that $$ T1 $$ and $$ T2 $$
+ran concurrently and having _rw-ww_ cycle among each other ends up
+both setting $$ x = 1 $$ even though they both were incrementing it.
+$$ W_2(x_1) $$ update was lost after $$ W_1(x_2) $$.
+The right outcome must be $$ x = 2 $$.
 
 ### G-single: Single Anti-dependency Cycles (read skew)
 
 **G-single** or _Single Anti-dependency Cycle_: A history H
 exhibits phenomenon *G-single* if *DSG(H)* contains a cycle
-consisting of an anti-dependency (_rw_) and one or more dependency (_ww_, _wr_)
-edges.
+consisting of an anti-dependency (_rw_) and one or more dependency
+(_ww_, _wr_) edges.
 
-*G-single* describes what is known as _read skew_ or _non-repeatable reads_.
+*G-single* describes what is known as a _read skew_ or _non-repeatable reads_.
 
 ![]({{ Site.url }}/public/tx_read_skew.png)
 
 The problem here is that _read-only_ transaction $$ T_i $$ performing
-read of $$ (x, y) $$ observed $$ x $$ and $$ y $$ from various states of
+read $$ (x, y) $$ observed $$ x $$ and $$ y $$ from various states of
 the system, thus ended up seeing inconsistent state. $$ R_i(x) $$ read
 a version before the committed transaction $$ T_j $$ wrote a version of
 $$ W_j(y) $$ that was then read by $$ T_i: R_i(y) $$.
@@ -358,7 +366,7 @@ $$ W_j(y) $$ that was then read by $$ T_i: R_i(y) $$.
 phenomenon *G2-item* if *DSG(H)* contains a directed cycle having
 one or more item-anti-dependency (_rw_) edges.
 
-*G2-item* describes what is known as _write skew_.
+*G2-item* describes what is known as a _write skew_.
 
 The level on which *G2-item* is disallowed called *PL-2.99* or
 _REPEATABLE READ_.
@@ -366,12 +374,13 @@ _REPEATABLE READ_.
 ![]({{ Site.url }}/public/tx_write_skew_item.png)
 
 In this example we have an invariant that only one of the
-objects may be enabled $$ x + y <= 1, \{x, y\} = \{0, 1\} $$.
+objects may be activated $$ x + y <= 1, \{x, y\} = \{0, 1\} $$.
 A transaction first reads both objects $$ (x, y) $$ and
-tries to enable only 1 of them. So the $$ T_i $$ reads
+tries to activate one of them. So the $$ T_i $$ reads
 $$ (x=0, y=0) $$ and writes $$ (x = 1) $$, and the $$ T_j $$
-$$ (x=0, y=0) $$ and writes $$ (y = 1) $$. In the end both
-commits and we end up with broken invariant $$ (x = 1, y = 1), x + y > 1 $$.
+reads $$ (x=0, y=0) $$ and writes $$ (y = 1) $$. In the end both
+commits and end up with broken invariant
+$$ (x = 1, y = 1), x + y > 1 $$.
 
 This happens due to the presence of _rw_ edges in the _DSG(H)_:
 $$ R_i(y) -rw-> W_j(y) $$, $$ R_j(x) -rw-> W_j(x) $$.
@@ -389,8 +398,8 @@ $$ R_i(y) -rw-> W_j(y) $$, $$ R_j(x) -rw-> W_j(x) $$.
 phenomenon *G2* if *DSG(H)* contains a directed cycle
 with one or more anti-dependency (_rw_) edges.
 
-*G2* describes what is known as _write skew_. This one
-includes predicate reads.
+*G2* describes what is known as a _write skew_. *G2*
+differ from the *G2-item* by including predicates.
 
 The level on which *G2* is disallowed called *PL-3* or
 _SERIALIZABLE_.
@@ -427,18 +436,19 @@ anti-dependency (_rw_) edge from $$ T_i $$ to $$ T_j $$ and $$ T_j $$’s
 read from $$ y $$ precedes its read from $$ x $$.
 
 OTV occurs when a transaction observes part of another transaction’s
-updates but not all of them and then observed partial state may
-completely vanish (get out of existence).
+updates but not all of them and then observed partial state
+completely vanishes (gets out of existence).
 
 ![]({{ Site.url }}/public/tx_otv_anomaly.png)
 
 Speaking of the second example we have 3 transactions $$ T_i, T_j, T_k $$.
-$$ T_k $$ observes partially $$ T_i $$ results reading $$ R_k(y_0) $$
-which then completely vanishes being overwritten by the $$ T_j $$
-$$ W_j(y_1) $$ even before the $$ T_k $$ finishes (commits).
+$$ T_k $$ (not necessarily a read-only transaction) observes
+partially $$ T_i $$ updates reading $$ R_k(y_0) $$ which then
+vanishes being overwritten by the $$ T_j: W_j(y_1) $$ even
+before the $$ T_k $$ finishes (commits).
 
-Thus, $$ T_k $$ has observed partial state $$ y_0 \in T_i $$
-which then vanishes ($$ T_j $$ commits before $$ T_k $$ and
+Thus, $$ T_k $$ has observed partial state $$ y_0 $$ of $$ T_i $$
+which then vanished ($$ T_j $$ commits before $$ T_k $$ and
 sets $$ W_j(y_1) $$).
 
 ```
@@ -487,7 +497,7 @@ IMP occurs if a transaction observes multiple versions of the same item
   T1 --W(x=1)--------------------------------(x=1)
   T2 -----------W(x=2)-----------------------(x=2)
   T3 -----------------R(x=2)-R(x=1)----------(x={1,2})
-  x  --1----------2--------------------------
+  x  --1?---------2?-------------------------?
 ```
 
 **Predicate-Many-Preceders (PMP)**. A history H exhibits
@@ -501,15 +511,15 @@ PMP occurs if a transaction observes different versions resulting from
 the same predicate read (e.g., transaction $$ T_i $$ reads
 $$ Vset(P_i) = ∅ $$ and $$ Vset(P_i) = {x_1} $$)).
 
-Both IMP and PMP relates to the _Snapshot_ isolation mode (
-a system provides Snapshot Isolation if it prevents phenomena
-_G0, G1a, G1b, G1c, PMP, OTV, and Lost Updates_).
+Both IMP and PMP relates to the _Snapshot_ isolation mode
+(Snapshot Isolation prevents _G0, G1a, G1b, G1c, PMP, OTV,_
+_and Lost Updates_ phenomena).
 
 ![]({{ Site.url }}/public/tx_pmp_anomaly.png)
 
 #### First example
 
-$$ T_i $$ performs 2 consecutive predicate reads such that
+$$ T_i $$ performs 2 consecutive predicate-reads such that
 $$ P_0 = P_a \cap P_b $$. $$ T_j $$ changes matches of $$ P_0 $$
 writing new object $$ z $$.
 
@@ -543,8 +553,8 @@ commit; -- T1
 #### Second example
 
 $$ T_i $$ performs 2 consecutive predicate reads such that
-$$ P_0 = P_a \cap P_b $$. In between these predicate reads
-it install new version of object $$ x $$ which gets completely
+$$ P_0 = P_a \cap P_b $$. In between of these reads it install
+new version of object $$ x $$ (update/delete) which gets completely
 lost behind versions written by just committed $$ T_j $$.
 
 ```
@@ -584,7 +594,66 @@ commit; -- T2
 
 ### Short-fork/ Long-fork (write-skew)
 
-TO BE DONE
+_Short-fork_ and _Long-fork_ phenomena are given in the context of
+Parallel Snapshot Isolation (PSI) described in [[9]] and [[11]].
+
+Advantage of the _PSI_ transactional model (to _SI_) is the ability of
+achieving total availability at the costs of having _long-forks_ [[10]].
+
+Citing the [[9]]:
+
+**Short fork** happens when transactions make concurrent disjoint
+updates causing the state to fork. After committing, the state
+is merged back.
+
+```
+     /(0,0)--T1:(1,0)--\
+    /                  v
+---o(0,0)--------------x(1,1)---
+    \                  ^
+     \(0,0)--T2:(0,1)--/
+```
+
+or in other words:
+
+```
+  T1 --R(x=0,y=0)-------W(x=1)----c1--(x=1,y=0)
+  T2 --R(x=0,y=0)-------W(y=1)----c2--(x=0,y=1)
+  x  --0-----------------1------------1         | both
+  y  --0-----------------1------------1         | are 1
+```
+
+This is exactly what is classical *G2-item* or _write-skew_.
+
+**Long fork** happens when transactions make concurrent disjoint
+updates causing the state to fork. After they commit, the state
+may remain forked but it is later merged back.
+
+```
+     /(0,0)--T1:(1,0)-T2:(1,0)--\
+    /                           v
+---o(0,0)-----------------------x(1,1)---
+    \                           ^
+     \(0,0)--T3:(0,1)-T4:(0,1)--/
+```
+
+it could be:
+
+```
+                      T2:(x=1,y=0,a=x+1)-\
+                      /                   \
+     /(x=0,y=0)--T1:(x=1,y=0)-------------x
+    /                                     v
+---(x=0,y=0)----------------------(x=1,y=1,a=2,b=3)---
+    \                                     ^
+     \(x=0,y=0)--T3:(x=0,y=1)-------------x
+                      \                   /
+                      T4:(x=1,y=0,b=y+2)-/
+```
+
+It is almost classical _write-skew_ with the ability to have
+transactions executed over a forked state branches, yet
+it is still a _write-skew_.
 
 ## Citations
 
