@@ -24,6 +24,7 @@ List of covered anomalies include:
 - [G2: Anti-Dependency Cycles (write skew on predicate read)](#g2-anti-dependency-cycles-write-skew-on-predicate-read)
 - [OTV: Observed Transaction Vanishes](#otv-observed-transaction-vanishes)
 - [IMP/PMP: Predicate-Many-Preceders](#imppmp-predicate-many-preceders)
+- [Short/Long fork: Write Skew variants in distributed database](#short-fork-long-fork-write-skew)
 
 ## Model
 
@@ -51,20 +52,26 @@ order on committed versions of each object.
 ## Predicates
 
 There are predicate _reads_ and _writes_. A predicate
-is a boolean condition.
+is a boolean condition: `Id = 1` or `WHERE DEPT = SALES` or
+`WHERE Age > 18`.
 
 For example, list all employees from _sales_ department:
 
     SELECT * FROM EMPLOYEE WHERE DEPT = SALES;
 
-A query based on a predicate $$ P $$ (DEPT = SALES) by transaction $$ T_i $$
+A query based on a predicate $$ P $$ (i.e. `DEPT = SALES`) by transaction $$ T_i $$
 is represented in a history as $$ r_i(P: Vset(P)) \, r_i(x_j) \, r_i(y_k) ... $$,
-where $$ x_j $$ , $$ y_k $$ are the versions in $$ Vset(P) $$ that match $$ P $$,
-and $$ T_i $$ reads these versions.
+where $$ x_j $$ , $$ y_k $$ are the object versions in $$ Vset(P) $$ that was read,
+$$ Vset(P) $$ is a set of selected versions of objects that matches $$ P $$ for this
+read, and $$ T_i $$ reads these versions.
 
-Or, rise salary for sales:
+Example of predicate-write, rise salary for sales:
 
     UPDATE EMPLOYEE SAL = SAL + $10 WHERE DEPT=SALES;
+
+In this document I will use simplified notation in which
+I only mention that the operation has predicate: $$ r_i(P: Vset(P)) $$
+without mentioning the versions actually read by it.
 
 ## Serialization Graph
 
@@ -103,7 +110,7 @@ or $$ W_1(x_0) -wr[x]-> R_2(x_0) $$.
 
 ```sql
 update test set value = 1 where id = 1;  -- Ti: Wi(x0)
-select * from test where id = 1;         -- Tj: Ri(x0)
+select * from test where id = 1;         -- Tj: Rj(x0)
 ```
 
 ### Change the matches of predicate-based read (wr)
@@ -114,17 +121,18 @@ and $$ x_h $$ matches $$ P $$ whereas $$ x_i $$ does not or vice-versa. In this 
 we also say that $$ x_i $$ changes the matches of the predicate-based read.
 
 This is another case of _wr_ dependency when first transaction
-installs a new object which then appears in the predicate-read
-results executed by the second transaction. And by appearing,
-it changes the predicate-read matching set.
+installs a new object version which then appears (or disappears)
+in the predicate-read results executed by the second transaction.
+And by doing so, it changes the predicate-read matching set $$ Vset(P) $$.
 
 ![]({{ Site.url }}/public/tx_read_predicate_dep_wr.png)
 
-Transaction $$ T_2 $$ sees $$ X_0 $$ at the first predicate-read.
-On the second predicate-read it observes nothing due to $$ X_0 $$ was
-just replaced with the $$ X_1 $$ by the $$ T1 $$ and
-$$ X_1 \notin Vset(P) $$: $$ W_1(x_1) -wr[x]-> R_2(P: Vset(P)) $$,
-$$ X_0 \in Vset(P), X_1 \notin Vset(P) $$.  
+Transaction $$ T_2 $$ sees $$ x_0 $$ in the first read.
+In the second read it observes nothing due to $$ x_0 $$ was
+just replaced with the $$ x_1 $$ by the $$ T1 $$ and
+$$ x_1 \notin Vset(P) $$ of $$ r_2(P) $$:
+$$ W_1(x_1) -wr[x]-> R_2(P: Vset(P)) $$,
+$$ r_21(Vset(P)=\{x_0\}), r_22(Vset(P)=\{\}) $$.  
 
 ```sql
 select * from test where value > 0;         -- Tj: Rj(P: Vset(P): x0)
@@ -139,12 +147,12 @@ installs a version $$ x_i $$ and $$ T_j $$ installs x’s next version
 (after $$ x_i $$) in the version order.
 
 The relation is called _ww_ because one transaction writes an object
-and the dependant transaction overwrites it. This is also called
-_dirty writes_.
+and the dependant transaction overwrites it. _ww_ cycles arises
+phenomena known as _dirty writes_.
 
 ![]({{ Site.url }}/public/tx_write_dep_ww.png)
 
-In this example transaction $$ T_2 $$ overwrites an object $$ X $$
+In this example transaction $$ T_2 $$ overwrites an object $$ x $$
 written by the transaction $$ T_1 $$ and thus _write-depends_
 on $$ T_1 $$. This _ww_ dependency is outlined as an orange arrow
 in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$:
@@ -158,16 +166,17 @@ update test set value = 2 where id = 1;  -- Tj: Wj(x1)
 ### Anti-dependency (rw)
 
 An anti-dependency occurs when a transaction overwrites a
-version observed by some other transaction. Thats in turn
-means that one transaction reads an object which is then
-changed by another transaction: read-write-depends (rw).
+version observed by some other transaction. One transaction
+reads an object which is then updated by another transaction:
+read-write-depends (rw).
 
 There is a small difference between the item-anti-dependency
-and predicate-anti-dependency but its not significant.
+and predicate-anti-dependency but its not significant, even
+though they form different levels of isolation.
 
 ![]({{ Site.url }}/public/tx_anti_dep_rw.png)
 
-In this example transaction $$ T_2 $$ changes (writes) an object $$ X $$
+In this example transaction $$ T_2 $$ updates an object $$ x $$
 observed by the transaction $$ T_1 $$ and thus _item-anti-depends_
 on $$ T_1 $$. This _rw_ dependency is outlined as an orange arrow
 in the graph from $$ T_1 $$ to $$ T_2 $$ over $$ x $$:
@@ -581,16 +590,31 @@ TO BE DONE
 
 All definitions are taken from [[1]], [[2]], [[3]].
 
+Big thanks to Adrian Colyer for his review of [[1]] in [the morning paper][6].
+
 ## References
 
-- [Atul Adya, Barbara Liskov, Patrick O’Neil: "Generalized Isolation Level Definitions" Appears in the Proceedings of the IEEE International Conference on Data Engineering, San Diego, CA, March 2000][1]
-- [Peter Bailis, Alan Fekete, Ali Ghodsi, Joseph M. Hellerstein, and Ion Stoica: "Scalable Atomic Visibility with RAMP Transactions" at ACM Transactions on Database Systems, Vol. 41, No. 3, Article 15, Publication date: July 2016][2]
-- [Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transaction][3]
-- [Project Hermitage][4]
-- [Hal Berenson, Phil Bernstein, Jim Gray, Jim Melton, Elizabeth O'Neil and Patrick O'Neil: A Critique of ANSI SQL Isolation Levels, at ACM International Conference on Management of Data (SIGMOD), volume 24, number 2, May 1995. doi:10.1145/568271.223785][5]
+- [Atul Adya, Barbara Liskov, Patrick O’Neil: "Generalized Isolation Level Definitions" Appears in the Proceedings of the IEEE International Conference on Data Engineering, San Diego, CA, March 2000][1] main paper to start.
+- [Peter Bailis, Alan Fekete, Ali Ghodsi, Joseph M. Hellerstein, and Ion Stoica: "Scalable Atomic Visibility with RAMP Transactions" at ACM Transactions on Database Systems, Vol. 41, No. 3, Article 15, Publication date: July 2016][2] main paper to continue.
+- [Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transaction][3], work that was written by Atul Adya in March 1999 before [[1]] appeared.
+- [Project Hermitage][4] about transactions anomalies in various transaction isolation levels in different database implementations. Basically in MySQL, PostgreSQL, Oracle and MSSQL. SQL tests included per level per anomaly.
+- [Hal Berenson, Phil Bernstein, Jim Gray, Jim Melton, Elizabeth O'Neil and Patrick O'Neil: A Critique of ANSI SQL Isolation Levels, at ACM International Conference on Management of Data (SIGMOD), volume 24, number 2, May 1995. doi:10.1145/568271.223785][5] about ambiguity of definitions of ANSI SQL Isolation Levels. Later those levels will be also criticized for not being suitable for Optimistic Concurrency Control implementation.
+- [Generalized Isolation Level Definitions, the morning paper blog, by Adrian Colyer, February 25, 2016][6]
+- [A Read-Only Transaction Anomaly Under Snapshot Isolation, By Alan Fekete, Elizabeth O'Neil, and Patrick O'Neil, ACM SIGMOD, Sep 2004][7] authors discuss anomalies found in Snapshot Isolation that was believed to be Serializable for read-only transactions. They write about Write Skew and Read Skew.
+- [Serializable Snapshot Isolation in PostgreSQL, By Dan R. K. Ports and Kevin Grittner, VLDB Endowment, Vol. 5, No. 12, 2012][8] authors discuss approach for implementing Serializable Snapshot isolation in PostgreSQL, optimizations and theory behind it. It is like a Snapshot isolation but all histories are Serializable due to the runtime conflict resolution. They also mention _G2-item_, _G2_ (write skew anomalies).
+- [Transactional storage for geo-replicated systems, By Yair Sovran, Russell Power, Marcos K. Aguilera, Jinyang Li, 2011][9] talks about Parallel Snapshot Isolation and variant of write skews that can appear: short/long fork.
+- [A Framework for Transactional Consistency Models with Atomic Visibility, By Andrea Cerone, Giovanni Bernardi, and Alexey Gotsman, 2015][11]
 
 [1]: http://bnrg.cs.berkeley.edu/~adj/cs262/papers/icde00.pdf "Atul Adya, Barbara Liskov, Patrick O’Neil: "Generalized Isolation Level Definitions" Appears in the Proceedings of the IEEE International Conference on Data Engineering, San Diego, CA, March 2000"
 [2]: http://www.bailis.org/papers/ramp-tods2016.pdf "Peter Bailis, Alan Fekete, Ali Ghodsi, Joseph M. Hellerstein, and Ion Stoica: "Scalable Atomic Visibility with RAMP Transactions" at ACM Transactions on Database Systems, Vol. 41, No. 3, Article 15, Publication date: July 2016."
 [3]: http://pmg.csail.mit.edu/papers/adya-phd.pdf "Weak Consistency: A Generalized Theory and Optimistic Implementations for Distributed Transactions"
 [4]: https://github.com/ept/hermitage/ "Project Hermitage"
 [5]: http://research.microsoft.com/pubs/69541/tr-95-51.pdf "Hal Berenson, Phil Bernstein, Jim Gray, Jim Melton, Elizabeth O'Neil and Patrick O'Neil: A Critique of ANSI SQL Isolation Levels, at ACM International Conference on Management of Data (SIGMOD), volume 24, number 2, May 1995. doi:10.1145/568271.223785"
+[6]: https://blog.acolyer.org/2016/02/25/generalized-isolation-level-definitions/ "Generalized Isolation Level Definitions, the morning paper a random walk through Computer Science research, by Adrian Colyer, February 25, 2016"
+[7]: https://www.cs.umb.edu/~poneil/ROAnom.pdf "A Read-Only Transaction Anomaly Under Snapshot Isolation, By Alan Fekete, Elizabeth O'Neil, and Patrick O'Neil, ACM SIGMOD, Sep 2004"
+[8]: https://drkp.net/papers/ssi-vldb12.pdf "Serializable Snapshot Isolation in PostgreSQL, By Dan R. K. Ports and Kevin Grittner, VLDB Endowment, Vol. 5, No. 12, 2012"
+[9]: http://www.news.cs.nyu.edu/~jinyang/pub/walter-sosp11.pdf "Transactional storage for geo-replicated systems, By Yair Sovran, Russell Power, Marcos K. Aguilera, Jinyang Li, 2011"
+[10]: https://jepsen.io/consistency/models/snapshot-isolation "jepsen.io on Snapshot Isolation"
+[11]: http://drops.dagstuhl.de/opus/volltexte/2015/5375/pdf/15.pdf "A Framework for Transactional Consistency Models with Atomic Visibility, By Andrea Cerone, Giovanni Bernardi, and Alexey Gotsman, 2015"
+[12]: http://software.imdea.org/~gotsman/papers/si-podc16.pdf "Analysing Snapshot Isolation, by Andrea Cerone and Alexey Gotsman, 2016"
+[13]: https://www.irif.fr/~gio/papers/CBGY-papoc15.pdf "Analysing and Optimising Parallel Snapshot Isolation, by Giovanni Bernardi, Andrea Cerone, Alexey Gotsman, and Hongseok Yang, 2015"
