@@ -5,7 +5,7 @@
 
 ## SUMMARY
 
-Backend software engineer interested in the Distributed Systems,
+Backend software engineer interested in Distributed Systems,
 Databases, Linux and open source. I like to build systems, research
 existing solutions, learn new programming languages and read white papers.
 
