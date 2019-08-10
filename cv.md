@@ -5,9 +5,12 @@
 
 ## SUMMARY
 
-Backend software engineer interested in Distributed Systems,
-Databases, Linux and open source. I like to build systems, research
-existing solutions, learn new programming languages and read white papers.
+Software engineer interested in Distributed Systems, System Programming, and
+Databases. I build systems that run on Linux or in a cloud with Open Source.
+I love learning programming languages, architectures, and reading white papers.
+
+For the last ten years, I've built a social network, a blockchain, an instant messaging,
+an MMO game, and infrastructure with the diverse range of languages and technologies.
 
 ## PROFESSIONAL EXPERIENCE
 
@@ -16,12 +19,12 @@ existing solutions, learn new programming languages and read white papers.
 Mar 2017 - Present  
 _Social Network, NDA_ (Go, GCP)
 
-I was responsible for creating core services.
-Technology stack: GoLang, gRPC, Google Cloud Platform, Spanner,
-Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
+I was responsible for creating a platform for social network.
 
-- I created system core which now grown to hundreds of services running in production,
-- I have built private blockchain system that can scale horizontally (improved btc&eth architecture),
+Accomplishments:
+
+- I have created platform core which now grown to hundreds of services running in production,
+- I have built semi-private blockchain system that can scale horizontally (improved btc&eth architecture),
 - I have built modern instant messaging system (like telegram),
 - I have built baseline infrastructure library for microservices, founded coding standards,
 - I have led migration from AWS to the Google Cloud Platform,
@@ -34,16 +37,20 @@ Responsibilities:
 - Assisting teams and processes,
 - Code quality and development culture management.
 
+Technology stack:
+
+- GoLang, gRPC, Google Cloud Platform, Spanner,
+  Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
+
 ### Site Reliability Engineer at Exit Games
 
 November 2014 - April 2017  
 _Cloud Infrastructure_ (Go, PS, C#)
 
-I was building systems to support an evolution of the cloud
-infrastructure and operations; troubleshoot and improve systems
-reliability, hack and integrate open source software.
+I was building systems for cloud infrastructure and operation,s
+troubleshooting and improving systems reliability.
 
-Achievements:
+Accomplishments:
 
 - I've built a multi-datacenter fault-tolerant cluster monitoring
   system atop deployed Consul infrastructure with a nice Dashboards
@@ -80,7 +87,7 @@ I've built MMO browser game backend system (MusicWars: http://musicwars.ru);
 I was in charge of all backend specific parts like architecture, development,
 scalability, reliability, optimization, and configuration.
 
-Achievements:
+Accomplishments:
 
 - created and ran scalable game platform
 - servers setup (aws and bare metal)
