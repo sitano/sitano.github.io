@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Testing FSR+VSR,CSR serializability showcase
+title: Testing serializability classes showcase
 categories: [theory, databases]
 tags: [theory, databases, examples, transactions, anomalies]
 mathjax: true
@@ -22,6 +22,14 @@ $$ s = r_1(x) r_3(x) w_3(y) w_2(x) r_4(y) c_2 w_4(x) c_4 r_5(x) c_3 w_5(z) c_5 w
 belongs. Basically we will be looking at final state serializability
 (FSR), view state serializability (VSR) and conflict state
 serializability (CSR).
+
+{% graphviz %}
+digraph "some graphviz title" {
+  a -> b
+  b -> c
+  c -> a
+}
+{% endgraphviz %}
 
 ## References
 

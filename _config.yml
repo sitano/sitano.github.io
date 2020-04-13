@@ -38,3 +38,7 @@ version:          v1.1.0
 
 github:
   repo:           https://github.com/sitano/sitano.github.io
+
+graphviz:
+  options: "-Tsvg" # 'dot' command option
+  command: "dot"   # execute this string. specify full path to 'dot' if you need
