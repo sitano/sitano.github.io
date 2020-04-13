@@ -23,13 +23,70 @@ belongs. Basically we will be looking at final state serializability
 (FSR), view state serializability (VSR) and conflict state
 serializability (CSR).
 
+First of all, let's take a look at steps grouped by transactions
+and order:
+
 {% graphviz %}
 digraph "some graphviz title" {
-  a -> b
-  b -> c
-  c -> a
+  rankdir="LR"
+  node [shape=plaintext, fontsize=14];
+  size = "200, 200";
+
+  subgraph t {
+    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
+  }
+
+  subgraph t1 {
+    "r1(x)" -> "w1(z)" -> c1
+  }
+
+  subgraph t2 {
+    "w2(x)" -> c2
+  }
+
+  subgraph t3 {
+    "r3(x)" -> "w3(y)" -> c3
+  }
+
+  subgraph t4 {
+    "r4(y)" -> "w4(x)" -> c4
+  }
+
+  subgraph t5 {
+    "r5(x)" -> "w5(z)" -> c5
+  }
+
+  { rank = "same"; "1";  "r1(x)" }
+  { rank = "same"; "2";  "r3(x)" }
+  { rank = "same"; "3";  "w3(y)" }
+  { rank = "same"; "4";  "w2(x)" }
+  { rank = "same"; "5";  "r4(y)" }
+  { rank = "same"; "6";  "c2" }
+  { rank = "same"; "7";  "w4(x)" }
+  { rank = "same"; "8";  "c4" }
+  { rank = "same"; "9";  "r5(x)" }
+  { rank = "same"; "10"; "c3" }
+  { rank = "same"; "11"; "w5(z)" }
+  { rank = "same"; "12"; "c5" }
+  { rank = "same"; "13"; "w1(z)" }
+  { rank = "same"; "14"; "c1" }
 }
 {% endgraphviz %}
+
+Here, we have 5 transactions $$ t_1, t_2, t_3, t_4, t_5 $$. We imply complete
+history with $$ t_0, t_{inf} $$. $$ op_i(x) $$ means read or write in transaction
+$$ i $$ of a data item $$ x $$.
+
+Let's start with testing for the CSR. To do that, we will draw
+the conflict graph for $$ s $$.
+
+Note:
+
+- conflict graph
+- conflict relation
+- conflict set
+
+For the greater fun let's start with drawing conflict relations $$ conf(s) $$.
 
 ## References
 
