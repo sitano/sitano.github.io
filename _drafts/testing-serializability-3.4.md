@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Testing serializability classes showcase
+title: Testing serializability classes
 categories: [theory, databases]
 tags: [theory, databases, examples, transactions, anomalies]
 mathjax: true
@@ -28,11 +28,12 @@ and order:
 
 {% graphviz %}
 digraph "some graphviz title" {
-  rankdir="LR"
-  node [shape=plaintext, fontsize=14];
-  size = "200, 200";
+  rankdir="LR"; ranksep=0.2;
+  node [shape=plaintext fontsize=12 margin=0 width=0 height=0];
+  edge [arrowsize=0.6 minlen=1];
 
   subgraph t {
+    mindist=100.0;
     0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
   }
 

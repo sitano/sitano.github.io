@@ -41,12 +41,14 @@ body {
 }
 
 html {
-  font-family: "Courier New", Courier, monospace;
+  font-size: 16.66667px;
+  font-family: "IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
+  font-family: var(--font-base,"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif);
+  line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Courier New", Courier, monospace;
-  font-weight: 400;
+  font-weight: 800;
   color: #313131;
   letter-spacing: -.025rem;
 }
@@ -77,12 +79,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 @media (min-width: 38em) {
   .container {
-    max-width: 32rem;
+    max-width: 38rem;
   }
 }
 @media (min-width: 56em) {
   .container {
-    max-width: 38rem;
+    max-width: 56rem;
   }
 }
 
