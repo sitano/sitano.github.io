@@ -28,9 +28,9 @@ and order:
 
 {% graphviz %}
 digraph "some graphviz title" {
-  rankdir="LR"; ranksep=0.2;
-  node [shape=plaintext fontsize=12 margin=0 width=0 height=0];
-  edge [arrowsize=0.6 minlen=1];
+  rankdir="LR"; ranksep=0.2; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.6 minlen=1 penwidth=0.5 arrowsize=0.5];
 
   subgraph t {
     mindist=100.0;
