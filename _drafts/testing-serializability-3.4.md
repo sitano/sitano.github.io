@@ -160,6 +160,7 @@ thus $$ s \notin CSR $$:
 
 {% graphviz %}
 digraph "d2(s)" {
+  rankdir="LR"; ranksep=0.2; fontname="Roboto";
   node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
   edge [arrowsize=0.5 minlen=1 penwidth=0.5];
 
@@ -348,9 +349,108 @@ due to the:
 
 $$ t_1 <_{s,x}\ t_2 <_{s,x}\ t_4 <_{s,x}\ t_5 <_{s,z}\ t_1 $$
 
-Now, having all that in mind, let's draw polygraph and prove we were right.
-We will start with drawing only $$ (V, E) $$ part of the $$ P(s) $$ for
-simplicity.
+Simply saying $$ t_1 $$ must be before $$ {t_2, t_4, t_5} $$ and after at the
+same time in serial schedule.
+
+Now, having all that in mind, let's draw polygraph
+$$ P(s) = <V\ =\ trans(s), E\ =\ RF(s), C\ =\ <V * V * V>> $$ and prove we were right.
+We will start with drawing only $$ (V, E) $$ part of the $$ P(s) $$ for simplicity.
+
+{% graphviz %}
+digraph "P(s) without choices" {
+  rankdir="LR"; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.5 penwidth=0.5];
+
+  t0 -> t1 [label=x]
+  t0 -> t3 [label=x]
+
+  t1 -> tinf [label=z]
+  t4 -> tinf [label=x]
+  t3 -> tinf [label=y]
+
+  t3 -> t4 [label=y]
+  t4 -> t5 [label=x]
+
+}
+{% endgraphviz %}
+
+Ok, it looks simple. No cycles yet. Let's draw choices set of $$ P(s) $$ that is:
+$$ C\ =\ \{(t',\ t′′,\ t)\ |\ (t,\ t′)\ \in\ E\ \land\ t′\ \text{reads}\ x\ \text{from}\ t\ \land\ \text{some}\ w(x)\ \text{from}\ t′′\ \text{appears somewhere in}\ s \} $$.
+Besides that they are alternative variants of dependencies, they also depict conflicts.
+
+How a choice looks like: for example for $$ (t_0, x, t_1) \in RF(s) $$ the choice is
+$$ (t_1, t_2, t_0) \in C(s) $$.
+
+C(s) = ...
+
+{% graphviz %}
+digraph "P(s) without choices" {
+  rankdir="LR"; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+
+  t0 -> t1 [label=x]
+  t0 -> t3 [label=x]
+
+  t1 -> tinf [label=z]
+  t4 -> tinf [label=x]
+  t3 -> tinf [label=y]
+
+  t3 -> t4 [label=y]
+  t4 -> t5 [label=x]
+
+  edge [arrowsize=0.5 color=gray style=dashed fontcolor=gray];
+
+  t1 -> t2 -> t0 [label=x]
+  t1 -> t4 -> t0 [label=x]
+  t3 -> t2 [label=x]
+  t3 -> t4 [label=x]
+  t5 -> t2 -> t4 [label=x]
+  t5 -> t0 -> t4 [label=x]
+  t4 -> t0 -> t3 [label=y]
+  t3 -> t4 -> t0 [label=x]
+  tinf -> t2 -> t4 [label=x]
+  tinf -> t5 -> t1 [label=z]
+  tinf -> t0 -> t3 [label=y]
+}
+{% endgraphviz %}
+
+Indeed, it's almost impossible to understand, what is going on here.
+Let's reduce number of uninteresting choices by picking choices that
+do not lead to the cycles in $$ P(s) $$ compatible graph.
+
+Also, few choices may be reducted by existing edges.
+
+{% graphviz %}
+digraph "P(s) without choices" {
+  rankdir="LR"; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+
+  t0 -> t1 [label=x]
+  t0 -> t3 [label="x,y"]
+
+  t1 -> tinf [label=z]
+  t4 -> tinf [label=x]
+  t3 -> tinf [label=y]
+
+  t3 -> t4 [label="x,y"]
+  t4 -> t5 [label=x]
+
+  t1 -> t2 [label=x]
+  t1 -> t4 [label=x]
+  t3 -> t2 [label=x]
+  t5 -> t2 [label=x]
+  t0 -> t4 [label=x]
+  tinf -> t2 [label=x]
+  tinf -> t5 [label=z]
+
+  edge [arrowsize=0.5 color=red style=dashed fontcolor=red];
+
+}
+{% endgraphviz %}
+
 
 ## References
 
