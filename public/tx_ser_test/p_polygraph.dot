@@ -1,0 +1,36 @@
+digraph "P(s)" {
+  rankdir="LR"; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+
+  t0 -> t1 [label=x color=blue fontcolor=blue]
+  t0 -> t2
+  t0 -> t3 [label=x color=blue fontcolor=blue]
+  t0 -> t4
+  t0 -> t5
+
+  t1 -> tinf [label=z color=blue fontcolor=blue]
+  t2 -> tinf
+  t3 -> tinf [label=y color=blue fontcolor=blue]
+  t4 -> tinf [label=x color=blue fontcolor=blue]
+  t5 -> tinf
+
+  t3 -> t4 [label=y color=blue fontcolor=blue]
+  t4 -> t5 [label=x color=blue fontcolor=blue]
+
+  edge [arrowsize=0.5 color=gray style=dashed fontcolor=gray];
+
+  t1 -> t2 -> t0 [label=x]
+  t1 -> t4 -> t0 [label=x]
+  t3 -> t2 -> t0 [label=x]
+  t3 -> t4 -> t0 [label=x]
+  t4 -> t0 -> t3 [label=y]
+  t5 -> t2 -> t4 [label=x]
+  t5 -> t0 -> t4 [label=x]
+  tinf -> t2 -> t4 [label=x]
+  tinf -> t0 -> t4 [label=x]
+  tinf -> t5 -> t1 [label=z]
+  tinf -> t0 -> t1 [label=z]
+  tinf -> t0 -> t3 [label=y]
+}
+

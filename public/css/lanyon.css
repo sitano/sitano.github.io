@@ -569,3 +569,8 @@ a.pagination-item:hover {
 .graphviz-wrapper {
   text-align: center;
 }
+
+p img {
+  margin-left: auto;
+  margin-right: auto;
+}

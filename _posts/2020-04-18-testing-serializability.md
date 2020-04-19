@@ -27,55 +27,7 @@ serializability (CSR).
 
 First of all, let's take a look at steps grouped by transaction id:
 
-{% graphviz %}
-digraph "step graph" {
-  rankdir="LR"; ranksep=0.2; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0 minlen=1 penwidth=0.5];
-
-  subgraph t {
-    mindist=100.0;
-    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
-  }
-
-  subgraph t1 {
-    t1 -> "r1(x)" -> "w1(z)" -> c1 -> e1
-  }
-
-  subgraph t2 {
-    t2 -> "w2(x)" -> c2 -> e2
-  }
-
-  subgraph t3 {
-    t3 -> "r3(x)" -> "w3(y)" -> c3 -> e3
-  }
-
-  subgraph t4 {
-    t4 -> "r4(y)" -> "w4(x)" -> c4 -> e4
-  }
-
-  subgraph t5 {
-    t5 -> "r5(x)" -> "w5(z)" -> c5 -> e5
-  }
-
-  { rank = "same"; "0";  t1 t2 t3 t4 t5 }
-  { rank = "same"; "1";  "r1(x)" }
-  { rank = "same"; "2";  "r3(x)" }
-  { rank = "same"; "3";  "w3(y)" }
-  { rank = "same"; "4";  "w2(x)" }
-  { rank = "same"; "5";  "r4(y)" }
-  { rank = "same"; "6";  "c2" }
-  { rank = "same"; "7";  "w4(x)" }
-  { rank = "same"; "8";  "c4" }
-  { rank = "same"; "9";  "r5(x)" }
-  { rank = "same"; "10"; "c3" }
-  { rank = "same"; "11"; "w5(z)" }
-  { rank = "same"; "12"; "c5" }
-  { rank = "same"; "13"; "w1(z)" }
-  { rank = "same"; "14"; "c1" }
-  { rank = "same"; inf;  e1 e2 e3 e4 e5 }
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/step_graph.svg)
 
 Here, we have 5 transactions $$ t_1, t_2, t_3, t_4, t_5 $$. We imply complete
 history with $$ t_0, t_{inf} $$, where $$ op_i(x) $$ means read or write in transaction
@@ -94,67 +46,7 @@ Note. Two data operations $$ p \in t $$ and $$ q \in t' $$ (t != t')
 are in conflict in $$ s $$ if they access the same data item and at least one
 of them is a write.
 
-{% graphviz %}
-digraph "D2(s) conflict step graph" {
-  rankdir="LR"; ranksep=0.2; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0 minlen=1 penwidth=0.5];
-
-  subgraph t {
-    mindist=100.0;
-    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
-  }
-
-  subgraph t1 {
-    t1 -> "r1(x)" -> "w1(z)" -> c1 -> e1
-  }
-
-  subgraph t2 {
-    t2 -> "w2(x)" -> c2 -> e2
-  }
-
-  subgraph t3 {
-    t3 -> "r3(x)" -> "w3(y)" -> c3 -> e3
-  }
-
-  subgraph t4 {
-    t4 -> "r4(y)" -> "w4(x)" -> c4 -> e4
-  }
-
-  subgraph t5 {
-    t5 -> "r5(x)" -> "w5(z)" -> c5 -> e5
-  }
-
-  { rank = "same"; "0";  t1 t2 t3 t4 t5 }
-  { rank = "same"; "1";  "r1(x)" }
-  { rank = "same"; "2";  "r3(x)" }
-  { rank = "same"; "3";  "w3(y)" }
-  { rank = "same"; "4";  "w2(x)" }
-  { rank = "same"; "5";  "r4(y)" }
-  { rank = "same"; "6";  "c2" }
-  { rank = "same"; "7";  "w4(x)" }
-  { rank = "same"; "8";  "c4" }
-  { rank = "same"; "9";  "r5(x)" }
-  { rank = "same"; "10"; "c3" }
-  { rank = "same"; "11"; "w5(z)" }
-  { rank = "same"; "12"; "c5" }
-  { rank = "same"; "13"; "w1(z)" }
-  { rank = "same"; "14"; "c1" }
-  { rank = "same"; inf;  e1 e2 e3 e4 e5 }
-
-  edge [arrowsize=0.5 color=red];
-
-  "w5(z)" -> "w1(z)"
-  "w4(x)" -> "r5(x)"
-  "w3(y)" -> "r4(y)"
-  "r3(x)" -> "w2(x)"
-  "r3(x)" -> "w4(x)"
-  "w2(x)" -> "w4(x)"
-  "w2(x)" -> "r5(x)"
-  "r1(x)" -> "w2(x)"
-  "r1(x)" -> "w4(x)"
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/d2_conf_step_graph.svg)
 
 The cycle is easy to see here at:
 
@@ -163,21 +55,7 @@ $$ \{(r_1(x), w_2(x)), (w_2(x), r_5(x)), (w_5(z), w_1(z))\} \subset conf(s) $$
 However, let's show that $$ G(s) $$ the conflict graph is not acyclic and
 thus $$ s \notin {CSR} $$:
 
-{% graphviz %}
-digraph "d2(s)" {
-  rankdir="LR"; ranksep=0.2; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0.5 minlen=1 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  t1 -> t2 [label=x color=red];
-  t2 -> t5 [label=x color=red];
-  t2 -> t4 [label=x];
-  t3 -> t2 [label=x];
-  t4 -> t5 [label=x];
-  t3 -> t4 [label="x,y"];
-  t5 -> t1 [label=z color=red];
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/g_step_graph.svg)
 
 We have proved that $$ s $$ does not belong to the CSR class.
 It is time to test if $$ s $$ belongs to the VSR - the most
@@ -195,73 +73,7 @@ denoted $$ p \rightarrow q $$, if $$ q $$ reads from $$ p $$, or if $$ p $$
 is a read step and $$ q $$ a subsequent write step from the same
 transaction.
 
-{% graphviz %}
-digraph "RF(s)" {
-  rankdir="LR"; ranksep=0.2; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0 minlen=1 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  subgraph t {
-    mindist=100.0;
-    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
-  }
-
-  subgraph t1 {
-    t1 -> "r1(x)" -> "w1(z)" -> c1 -> e1
-  }
-
-  subgraph t2 {
-    t2 -> "w2(x)" -> c2 -> e2
-  }
-
-  subgraph t3 {
-    t3 -> "r3(x)" -> "w3(y)" -> c3 -> e3
-  }
-
-  subgraph t4 {
-    t4 -> "r4(y)" -> "w4(x)" -> c4 -> e4
-  }
-
-  subgraph t5 {
-    t5 -> "r5(x)" -> "w5(z)" -> c5 -> e5
-  }
-
-  { rank = "same"; "0";  t1 t2 t3 t4 t5 }
-  { rank = "same"; "1";  "r1(x)" }
-  { rank = "same"; "2";  "r3(x)" }
-  { rank = "same"; "3";  "w3(y)" }
-  { rank = "same"; "4";  "w2(x)" }
-  { rank = "same"; "5";  "r4(y)" }
-  { rank = "same"; "6";  "c2" }
-  { rank = "same"; "7";  "w4(x)" }
-  { rank = "same"; "8";  "c4" }
-  { rank = "same"; "9";  "r5(x)" }
-  { rank = "same"; "10"; "c3" }
-  { rank = "same"; "11"; "w5(z)" }
-  { rank = "same"; "12"; "c5" }
-  { rank = "same"; "13"; "w1(z)" }
-  { rank = "same"; "14"; "c1" }
-  { rank = "same"; inf;  e1 e2 e3 e4 e5 }
-
-  edge [arrowsize=0.5 color=blue];
-
-  "w1(z)" -> "e1"
-  "w4(x)" -> "e4"
-  "w3(y)" -> "e3"
-
-  "w4(x)" -> "r5(x)"
-  "w3(y)" -> "r4(y)"
-
-  "t3" -> "r3(x)"
-  "t1" -> "r1(x)"
-
-  edge [arrowsize=0.5 color=gray];
-
-  "r3(x)" -> "w3(y)"
-  "r4(y)" -> "w4(x)"
-  "r1(x)" -> "w1(z)"
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/rf_read_from.svg)
 
 Blue lines depict $$ RF(s) $$ relation. In example in pair
 $$ (r_1(z), e_1) \in RF(s), e_i = t_\infty $$ the transaction $$ t_\infty $$
@@ -272,79 +84,7 @@ $$ ($$ H[s](z) = H_s(w_1(z)) $$).
 Let's also add few important conflicts from the $$ conf(s) $$
 to our graph to see where we will have cycle in choices.
 
-{% graphviz %}
-digraph "RF(s)" {
-  rankdir="LR"; ranksep=0.2; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0 minlen=1 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  subgraph t {
-    mindist=100.0;
-    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
-  }
-
-  subgraph t1 {
-    t1 -> "r1(x)" -> "w1(z)" -> c1 -> e1
-  }
-
-  subgraph t2 {
-    t2 -> "w2(x)" -> c2 -> e2
-  }
-
-  subgraph t3 {
-    t3 -> "r3(x)" -> "w3(y)" -> c3 -> e3
-  }
-
-  subgraph t4 {
-    t4 -> "r4(y)" -> "w4(x)" -> c4 -> e4
-  }
-
-  subgraph t5 {
-    t5 -> "r5(x)" -> "w5(z)" -> c5 -> e5
-  }
-
-  { rank = "same"; "0";  t1 t2 t3 t4 t5 }
-  { rank = "same"; "1";  "r1(x)" }
-  { rank = "same"; "2";  "r3(x)" }
-  { rank = "same"; "3";  "w3(y)" }
-  { rank = "same"; "4";  "w2(x)" }
-  { rank = "same"; "5";  "r4(y)" }
-  { rank = "same"; "6";  "c2" }
-  { rank = "same"; "7";  "w4(x)" }
-  { rank = "same"; "8";  "c4" }
-  { rank = "same"; "9";  "r5(x)" }
-  { rank = "same"; "10"; "c3" }
-  { rank = "same"; "11"; "w5(z)" }
-  { rank = "same"; "12"; "c5" }
-  { rank = "same"; "13"; "w1(z)" }
-  { rank = "same"; "14"; "c1" }
-  { rank = "same"; inf;  e1 e2 e3 e4 e5 }
-
-  edge [arrowsize=0.5 color=blue];
-
-  "w1(z)" -> "e1"
-  "w4(x)" -> "e4"
-  "w3(y)" -> "e3"
-
-  "w4(x)" -> "r5(x)"
-  "w3(y)" -> "r4(y)"
-
-  "t3" -> "r3(x)"
-  "t1" -> "r1(x)"
-
-  edge [arrowsize=0.5 color=gray];
-
-  "r3(x)" -> "w3(y)"
-  "r4(y)" -> "w4(x)"
-  "r1(x)" -> "w1(z)"
-
-  edge [arrowsize=0.5 color=red];
-
-  "r1(x)" -> "w2(x)"
-  "w2(x)" -> "w4(x)"
-  "w5(z)" -> "w1(z)"
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/rf_and_dep.svg)
 
 These conflicts clearly demonstrates the limits until which the transactions
 can be moved before breaking their $$ RF(s) $$ relation with $$ s' - serial$$.
@@ -365,29 +105,7 @@ prove we were right.
 We will start with drawing only $$ (V, E) $$ part of the
 $$ P(s) $$ without choices (C) for simplicity.
 
-{% graphviz %}
-digraph "P(s) without choices" {
-  rankdir="LR"; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  t0 -> t1 [label=x color=blue fontcolor=blue]
-  t0 -> t2
-  t0 -> t3 [label=x color=blue fontcolor=blue]
-  t0 -> t4
-  t0 -> t5
-
-  t1 -> tinf [label=z color=blue fontcolor=blue]
-  t2 -> tinf
-  t3 -> tinf [label=y color=blue fontcolor=blue]
-  t4 -> tinf [label=x color=blue fontcolor=blue]
-  t5 -> tinf
-
-  t3 -> t4 [label=y color=blue fontcolor=blue]
-  t4 -> t5 [label=x color=blue fontcolor=blue]
-
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/p_wo_choices.svg)
 
 Ok, it looks simple. No cycles yet. Let's draw choices set of $$ P(s) $$ that is:
 $$ C\ =\ \{(t',\ t′′,\ t)\ |\ (t,\ t′)\ \in\ E\ \land\ t′\ \text{reads}\ x\ \text{from}\ t\ \land\ \text{some}\ w(x)\ \text{from}\ t′′\ \text{appears somewhere in}\ s \} $$.
@@ -400,43 +118,7 @@ $$ \exists\ w_2(x) \in t_2\ |\ t_1\ \text{reads}\ x\ \text{from}\ t_0:
 w_0(x) \rightarrow r_1(x) $$ and we draw
 2 possible edges $$ (t_1, t_2), (t_2, t_0) $$.
 
-{% graphviz %}
-digraph "P(s)" {
-  rankdir="LR"; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  t0 -> t1 [label=x color=blue fontcolor=blue]
-  t0 -> t2
-  t0 -> t3 [label=x color=blue fontcolor=blue]
-  t0 -> t4
-  t0 -> t5
-
-  t1 -> tinf [label=z color=blue fontcolor=blue]
-  t2 -> tinf
-  t3 -> tinf [label=y color=blue fontcolor=blue]
-  t4 -> tinf [label=x color=blue fontcolor=blue]
-  t5 -> tinf
-
-  t3 -> t4 [label=y color=blue fontcolor=blue]
-  t4 -> t5 [label=x color=blue fontcolor=blue]
-
-  edge [arrowsize=0.5 color=gray style=dashed fontcolor=gray];
-
-  t1 -> t2 -> t0 [label=x]
-  t1 -> t4 -> t0 [label=x]
-  t3 -> t2 -> t0 [label=x]
-  t3 -> t4 -> t0 [label=x]
-  t4 -> t0 -> t3 [label=y]
-  t5 -> t2 -> t4 [label=x]
-  t5 -> t0 -> t4 [label=x]
-  tinf -> t2 -> t4 [label=x]
-  tinf -> t0 -> t4 [label=x]
-  tinf -> t5 -> t1 [label=z]
-  tinf -> t0 -> t1 [label=z]
-  tinf -> t0 -> t3 [label=y]
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph.svg)
 
 Indeed, it's almost impossible to understand, what is going on here.
 Let's reduce number of uninteresting choices by picking choices that
@@ -445,47 +127,7 @@ compatible graph $$ G(s) $$ to the polygraph along the way.
 
 Few choices will be reduced by existing edges.
 
-{% graphviz %}
-digraph "G(s) P(s) partially compatible" {
-  rankdir="LR"; fontname="Roboto";
-  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-  edge [arrowsize=0.5 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
-
-  t0 -> t1 [label="x,z" color=blue fontcolor=blue]
-  t0 -> t2
-  t0 -> t3 [label="x,y" color=blue fontcolor=blue]
-  // t0 -> t4
-  t0 -> t5
-
-  t1 -> tinf [label=z color=blue fontcolor=blue]
-  t2 -> tinf
-  t3 -> tinf [label=y color=blue fontcolor=blue]
-  t4 -> tinf [label=x color=blue fontcolor=blue]
-  t5 -> tinf
-
-  t3 -> t4 [label="x,y" color=blue fontcolor=blue]
-  t4 -> t5 [label=x color=blue fontcolor=blue]
-
-
-  edge [arrowsize=0.5 color=gray fontcolor=gray];
-
-  t1 -> t2 [label=x]
-  t1 -> t4 [label=x]
-  t3 -> t2 [label=x]
-  // t3 -> t4 [label=x]
-  // t0 -> t3 [label=y]
-  t5 -> t2 [label=x]
-  t0 -> t4 [label=x]
-  // t0 -> t4 [label=x]
-  // t0 -> t1 [label=z]
-  // t0 -> t3 [label=y]
-
-  edge [arrowsize=0.5 color=red style=dashed fontcolor=red];
-
-  tinf -> t2 -> t4 [label=x]
-  tinf -> t5 -> t1 [label=z]
-}
-{% endgraphviz %}
+![]({{ Site.url }}/public/tx_ser_test/p_g_part_comp.svg)
 
 Red dashed arrows depict choices that can't be reduced without
 introducing a cycle into a compatible graph. Thus, we can't build

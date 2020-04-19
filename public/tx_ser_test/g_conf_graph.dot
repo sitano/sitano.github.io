@@ -1,0 +1,13 @@
+digraph "g(s) conflict graph" {
+  rankdir="LR"; ranksep=0.2; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0.5 minlen=1 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+
+  t1 -> t2 [label=x color=red];
+  t2 -> t5 [label=x color=red];
+  t2 -> t4 [label=x];
+  t3 -> t2 [label=x];
+  t4 -> t5 [label=x];
+  t3 -> t4 [label="x,y"];
+  t5 -> t1 [label=z color=red];
+}

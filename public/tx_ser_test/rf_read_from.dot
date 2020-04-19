@@ -1,0 +1,66 @@
+digraph "RF(s)" {
+  rankdir="LR"; ranksep=0.2; fontname="Roboto";
+  node [shape=plaintext fontsize=12 margin=0.05 width=0 height=0 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+  edge [arrowsize=0 minlen=1 penwidth=0.5 fontsize=12 fontname="MJXc-TeX-math-I,MJXc-TeX-math-Ix,MJXc-TeX-math-Iw"];
+
+  subgraph t {
+    mindist=100.0;
+    0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12 -> 13 -> 14 -> inf
+  }
+
+  subgraph t1 {
+    t1 -> "r1(x)" -> "w1(z)" -> c1 -> e1
+  }
+
+  subgraph t2 {
+    t2 -> "w2(x)" -> c2 -> e2
+  }
+
+  subgraph t3 {
+    t3 -> "r3(x)" -> "w3(y)" -> c3 -> e3
+  }
+
+  subgraph t4 {
+    t4 -> "r4(y)" -> "w4(x)" -> c4 -> e4
+  }
+
+  subgraph t5 {
+    t5 -> "r5(x)" -> "w5(z)" -> c5 -> e5
+  }
+
+  { rank = "same"; "0";  t1 t2 t3 t4 t5 }
+  { rank = "same"; "1";  "r1(x)" }
+  { rank = "same"; "2";  "r3(x)" }
+  { rank = "same"; "3";  "w3(y)" }
+  { rank = "same"; "4";  "w2(x)" }
+  { rank = "same"; "5";  "r4(y)" }
+  { rank = "same"; "6";  "c2" }
+  { rank = "same"; "7";  "w4(x)" }
+  { rank = "same"; "8";  "c4" }
+  { rank = "same"; "9";  "r5(x)" }
+  { rank = "same"; "10"; "c3" }
+  { rank = "same"; "11"; "w5(z)" }
+  { rank = "same"; "12"; "c5" }
+  { rank = "same"; "13"; "w1(z)" }
+  { rank = "same"; "14"; "c1" }
+  { rank = "same"; inf;  e1 e2 e3 e4 e5 }
+
+  edge [arrowsize=0.5 color=blue];
+
+  "w1(z)" -> "e1"
+  "w4(x)" -> "e4"
+  "w3(y)" -> "e3"
+
+  "w4(x)" -> "r5(x)"
+  "w3(y)" -> "r4(y)"
+
+  "t3" -> "r3(x)"
+  "t1" -> "r1(x)"
+
+  edge [arrowsize=0.5 color=gray];
+
+  "r3(x)" -> "w3(y)"
+  "r4(y)" -> "w4(x)"
+  "r1(x)" -> "w1(z)"
+}
+
