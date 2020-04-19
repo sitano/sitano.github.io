@@ -55,7 +55,7 @@ $$ \{(r_1(x), w_2(x)), (w_2(x), r_5(x)), (w_5(z), w_1(z))\} \subset conf(s) $$
 However, let's show that $$ G(s) $$ the conflict graph is not acyclic and
 thus $$ s \notin {CSR} $$:
 
-![]({{ Site.url }}/public/tx_ser_test/g_step_graph.svg)
+![]({{ Site.url }}/public/tx_ser_test/g_conf_graph.svg)
 
 We have proved that $$ s $$ does not belong to the CSR class.
 It is time to test if $$ s $$ belongs to the VSR - the most
