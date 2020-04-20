@@ -4,6 +4,8 @@ title: Testing serializability classes
 categories: [theory, databases]
 tags: [theory, databases, examples, transactions, anomalies]
 mathjax: true
+desc: An example of testing a transaction schedule for FSR, VSR and CSR classes
+thumbnail: /public/tx_ser_test/rf_and_dep.png
 ---
 
 Recently, I came across an excellent exercise of testing a scheduling
