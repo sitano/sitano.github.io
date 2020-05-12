@@ -17,6 +17,8 @@ title: To write
 - 15-721 Advanced Database Systems (Spring 2019) https://www.youtube.com/watch?v=m72mt4VN9ik&list=PLSE8ODhjZXja7K1hjZ01UTVDnGQdx5v5U
 - Time Series Database Lectures (Fall 2017) https://www.youtube.com/watch?v=2SUBRE6wGiA&list=PLSE8ODhjZXjY0GMWN4X8FIkYNfiu8_Wl9
 - solve CMU DB impl https://github.com/cmu-db/bustub
+- solve TiDB Training Plan
+- write 3D software renderer, raytracer, raymarcher
 
 ## Questions
 
