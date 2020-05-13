@@ -1,0 +1,97 @@
+\documentclass[preview]{standalone}
+\usepackage{tikz,fullpage,tikz-network,verbatim}
+\usetikzlibrary{arrows, petri, topaths, calc, angles, quotes}
+\begin{document}
+\begin{tikzpicture}[scale=1,transform shape]
+  %\draw (0, 0) grid (15, 10);
+
+  \SetVertexStyle[FillColor=white,TextFont=\large,MinSize=22]
+  \Vertex[x=3 ,y=9, label=$t_0$]{t0}
+  \Vertex[x=11,y=10,label=$t_1$]{t1}
+  \Vertex[x=8 ,y=5, label=$t_2$]{t2}
+  \Vertex[x=2 ,y=3, label=$t_3$]{t3}
+  \Vertex[x=5 ,y=0, label=$t_4$]{t4}
+  \Vertex[x=11,y=0, label=$t_5$]{t5}
+  \Vertex[x=15,y=5, label=$t_{inf}$]{tinf}
+
+  \SetEdgeStyle[TextFont=\large,LineWidth=0.6pt,InnerSep=0.5pt,Color=blue!75]
+  \Edge[label=x,Direct,bend=35](t0)(t1)
+  \Edge[label=x,Direct,bend=-20](t0)(t3)
+  \Edge[label=y,Direct,bend=-15](t3)(t4)
+  \Edge[label=x,Direct,bend=-15](t4)(t5)
+  \Edge[label=z,Direct,bend=10](t1)(tinf)
+  \Edge[label=y,Direct,bend=-15](t3)(tinf)
+  \Edge[label=x,Direct,bend=-15](t4)(tinf)
+
+  \SetEdgeStyle[TextFont=\large,LineWidth=0.4pt,InnerSep=0.5pt,Color=black!75]
+  \Edge[Direct,bend=-15](t0)(t2)
+  \Edge[Direct,bend=-15](t2)(tinf)
+  \Edge[Direct,bend=-20](t5)(tinf)
+
+  % Choices:
+  \SetEdgeStyle[TextFont=\large,LineWidth=0.2pt,InnerSep=0.5pt,Color=gray!75]
+
+  % t1 -> t2 -> t0 [label=x]
+  \Edge[Direct,style=dashed](t1)(t2)
+  \Edge[Direct,style=dashed](t2)(t0)
+  \path[draw] pic[draw,angle radius=0.9cm,opacity=0.5,"$x$"] {angle = t1--t2--t0};
+
+  % t1 -> t4 -> t0 [label=x]
+  \Edge[Direct,style=dashed,bend=20](t1)(t4)
+  \Edge[Direct,style=dashed](t4)(t0)
+  \coordinate (t140) at (11,5);
+  \path[draw] pic[draw,angle radius=1cm,opacity=0.5,"$x$"] {angle = t140--t4--t0};
+
+  % t3 -> t2 -> t0 [label=x]
+  \Edge[Direct,style=dashed](t3)(t2)
+  \Edge[Direct,style=dashed](t2)(t0)
+  \path[draw] pic[draw,angle radius=1cm,opacity=0.5,"$x$"] {angle = t0--t2--t3};
+
+  % t3 -> t4 -> t0 [label=x]
+  \Edge[Direct,style=dashed](t3)(t4)
+  \Edge[Direct,style=dashed](t4)(t0)
+  \path[draw] pic[draw,angle radius=1.1cm,opacity=0.5,"$x$"] {angle = t0--t4--t3};
+
+  % t4 -> t0 -> t3 [label=y]
+  \Edge[Direct,style=dashed](t4)(t0)
+  \Edge[Direct,style=dashed](t0)(t3)
+  \path[draw] pic[draw,angle radius=2cm,opacity=0.5,"$y$"] {angle = t3--t0--t4};
+
+  % t5 -> t2 -> t4 [label=x]
+  \Edge[Direct,style=dashed](t5)(t2)
+  \Edge[Direct,style=dashed](t2)(t4)
+  \path[draw] pic[draw,angle radius=1cm,opacity=0.5,"$x$"] {angle = t4--t2--t5};
+
+  % t5 -> t0 -> t4 [label=x]
+  \Edge[Direct,style=dashed,bend=15](t5)(t0)
+  \Edge[Direct,style=dashed,bend=15](t0)(t4)
+  \coordinate (t405s) at (6,2);
+  \coordinate (t405e) at (7,2);
+  \path[draw] pic[draw,angle radius=4cm,opacity=0.5,"$x$"] {angle = t405s--t0--t405e};
+
+  % tinf -> t2 -> t4 [label=x]
+  \Edge[Direct,style=dashed](tinf)(t2)
+  % \Edge[Direct,style=dashed](t2)(t4)
+  \path[draw] pic[draw,angle radius=1.1cm,opacity=0.5] {angle = t4--t2--tinf};
+
+  % tinf -> t0 -> t4 [label=x]
+  \Edge[Direct,style=dashed](tinf)(t0)
+  % \Edge[Direct,style=dashed,bend=15](t0)(t4)
+  \path[draw] pic[draw,angle radius=4.1cm,opacity=0.5] {angle = t405s--t0--tinf};
+
+  % tinf -> t5 -> t1 [label=z]
+  \Edge[Direct,style=dashed](tinf)(t5)
+  \Edge[Direct,style=dashed](t5)(t1)
+  \path[draw] pic[draw,angle radius=1cm,opacity=0.5,"$z$"] {angle = tinf--t5--t1};
+
+  % tinf -> t0 -> t1 [label=z]
+  % \Edge[Direct,style=dashed](tinf)(t0)
+  \Edge[Direct,style=dashed](t0)(t1)
+  \path[draw] pic[draw,angle radius=1cm,opacity=0.5,"$z$"] {angle = tinf--t0--t1};
+
+  % tinf -> t0 -> t3 [label=y]
+  % \Edge[Direct,style=dashed](tinf)(t0)
+  % \Edge[Direct,style=dashed](t0)(t3)
+  \path[draw] pic[draw,angle radius=1.1cm,opacity=0.5,"$y$"] {angle = tinf--t0--t3};
+\end{tikzpicture}
+\end{document}

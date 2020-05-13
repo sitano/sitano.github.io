@@ -32,13 +32,13 @@ First of all, let's take a look at steps grouped by transaction id:
 ![]({{ Site.url }}/public/tx_ser_test/step_graph.svg)
 
 Here, we have 5 transactions $$ t_1, t_2, t_3, t_4, t_5 $$. We imply complete
-history with $$ t_0, t_{inf} $$, where $$ op_i(x) $$ means read or write in transaction
-$$ i $$ of a data item $$ x $$.
+history with $$ t_0, t_{inf} $$, where $$ op_i(x) $$ means read or write
+operation in transaction $$ i $$ of a data item $$ x $$.
 
-Let's start with testing for the CSR. To do that, we will draw
+Let's start with a testing for the CSR. To do that, we will draw
 the conflict graph $$ G(s) $$.
 
-For the greater fun let's start with drawing conflict step graph
+For the greater fun let's start with a drawing of the conflict step graph
 $$ D_2(s) = < V = op(s), E = {conf}(s) > $$.
 
 Note. $$ conf(s) := \{(p, q)\ |\ p, q\ \text{are in conflict in}\ s\ \text{and}
@@ -54,26 +54,30 @@ The cycle is easy to see here at:
 
 $$ \{(r_1(x), w_2(x)), (w_2(x), r_5(x)), (w_5(z), w_1(z))\} \subset conf(s) $$
 
-However, let's show that $$ G(s) $$ the conflict graph is not acyclic and
+However, let's show that the conflict graph $$ G(s) $$ is not acyclic and
 thus $$ s \notin {CSR} $$:
 
 ![]({{ Site.url }}/public/tx_ser_test/g_conf_graph.svg)
 
 We have proved that $$ s $$ does not belong to the CSR class.
 It is time to test if $$ s $$ belongs to the VSR - the most
-funniest part of the test. We first test if $$ s \in VSR $$
+funniest part of the exercise. We first test if $$ s \in VSR $$
 and then if it does find $$ s' - serial | s \approx_v s' $$.
 
-To make drawing $$ s $$ polygraph easier let's draw useful
-steps in $$ s $$ with $$ RF(s) $$ first.
+To verify if $$ s \in VSR $$ we must prove that the polygraph of
+$$ s $$ is acyclic. That means that there exists a _compatible_ graph
+$$ G(s) $$ that is acyclic.
 
-Note. $$ RF(s) $$ is a read-from relation over $$ s $$ defined as
-$$ RF(s) = {(t_i, x, t_j)\ |\ \text{an}\ r_j(x)\ \text{reads}\ x\ \text{from a}\ w_i(x)} $$.
+To make understanding simpler let's take a look at useful steps in $$ s $$
+first.
 
 Note. A step $$ p $$ is directly useful for a step $$ q $$,
 denoted $$ p \rightarrow q $$, if $$ q $$ reads from $$ p $$, or if $$ p $$
 is a read step and $$ q $$ a subsequent write step from the same
 transaction.
+
+Note. $$ RF(s) $$ is a read-from relation over $$ s $$ defined as
+$$ RF(s) = {(t_i, x, t_j)\ |\ \text{an}\ r_j(x)\ \text{reads}\ x\ \text{from a}\ w_i(x)} $$.
 
 ![]({{ Site.url }}/public/tx_ser_test/rf_read_from.svg)
 
@@ -83,12 +87,12 @@ reads $$ z $$ from the latest write in $$ s $$ of $$ z $$ from
 transaction $$ t_1 $$ as defined by the $$ H[s]
 $$ ($$ H[s](z) = H_s(w_1(z)) $$).
 
-Let's also add few important conflicts from the $$ conf(s) $$
-to our graph to see where we will have cycle in choices.
+Let's also add a few important conflicts from the $$ conf(s) $$
+to our graph to see where we are having cycle in choices.
 
 ![]({{ Site.url }}/public/tx_ser_test/rf_and_dep.svg)
 
-These conflicts clearly demonstrates the limits until which the transactions
+Those conflicts clearly demonstrate the limits until which the transactions
 can be moved before breaking their $$ RF(s) $$ relation with $$ s' - serial$$.
 Having those conflicts depicted it can be clearly seen that there is no such a
 serial transaction exist that $$ s'\ -\ \text{serial}\ |\ s \approx_v s' $$
@@ -107,7 +111,7 @@ prove we were right.
 We will start with drawing only $$ (V, E) $$ part of the
 $$ P(s) $$ without choices (C) for simplicity.
 
-![]({{ Site.url }}/public/tx_ser_test/p_wo_choices.svg)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_1.gif)
 
 Ok, it looks simple. No cycles yet. Let's draw choices set of $$ P(s) $$ that is:
 $$ C\ =\ \{(t',\ t′′,\ t)\ |\ (t,\ t′)\ \in\ E\ \land\ t′\ \text{reads}\ x\ \text{from}\ t\ \land\ \text{some}\ w(x)\ \text{from}\ t′′\ \text{appears somewhere in}\ s \} $$.
@@ -120,16 +124,27 @@ $$ \exists\ w_2(x) \in t_2\ |\ t_1\ \text{reads}\ x\ \text{from}\ t_0:
 w_0(x) \rightarrow r_1(x) $$ and we draw
 2 possible edges $$ (t_1, t_2), (t_2, t_0) $$.
 
-![]({{ Site.url }}/public/tx_ser_test/p_polygraph.svg)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_2.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_3.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_4.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_5.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_6.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_7.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_8.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_9.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_10.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_12.gif)
+![]({{ Site.url }}/public/tx_ser_test/p_polygraph_13.gif)
 
-Indeed, it's almost impossible to understand, what is going on here.
 Let's reduce number of uninteresting choices by picking choices that
 do not lead to the cycles in $$ P(s) $$. Thus we will draw partially
 compatible graph $$ G(s) $$ to the polygraph along the way.
 
-Few choices will be reduced by existing edges.
+![]({{ Site.url }}/public/tx_ser_test/p_g_part_comp_2.gif)
 
-![]({{ Site.url }}/public/tx_ser_test/p_g_part_comp.svg)
+Few choices were reduced by the existing edges.
+
+![]({{ Site.url }}/public/tx_ser_test/p_g_part_comp_3.gif)
 
 Red dashed arrows depict choices that can't be reduced without
 introducing a cycle into a compatible graph. Thus, we can't build

@@ -3,3 +3,6 @@
 find . -name 'p_polygraph_*.tex' -exec pdflatex --output-format pdf {} \;
 find . -name 'p_polygraph_*.pdf' -exec pdfcrop {} \;
 find . -name 'p_polygraph_*-crop.pdf' -exec pdftoppm -png {} {}.ppm \;
+find . -name 'p_g_part_comp_*.tex' -exec pdflatex --output-format pdf {} \;
+find . -name 'p_g_part_comp_*.pdf' -exec pdfcrop {} \;
+find . -name 'p_g_part_comp_*-crop.pdf' -exec pdftoppm -png {} {}.ppm \;
