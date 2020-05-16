@@ -97,7 +97,29 @@ $$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 a_2 lw_1(x) w_1(x) uw_1(x) c_1 $$
 Wound-wait
 ===
 
-TODO
+Receiving $$ w_3(x) $$ must block $$ t_3 $$ for $$ t_1,\ t_2 $$. Indeed,
+$$ ts(t_3)\ >\ ts(t_1) \land ts(t_3)\ >\ ts(t_2) $$. Hence $$ t_3 $$
+is younger it will block and wait for $$ t_1 $$ and $$ t_2 $$ lock release.
+Thus we are still having:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) $$, t_3 waits
+
+The same thing happens for the $$ w_4(x) \in t_4 $$: 
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) $$, {t_3, t_4} waits
+
+Then we receive $$ w_1(x) $$ from $$ t_1 $$. $$ ts(t_1)\ <\ ts(t_2) $$
+thus $$ lw_1(x) $$ wounds $$ t_2 $$ that holds shared lock by issuing $$ a_2 $$:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1 $$, {t_3, t_4} waits
+
+Now, we can finish $$ t_3 $$ and $$ t_4 $$:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1
+lw_3(x) w_3(x) uw_3(x) c_3(x)
+lw_4(x) w_4(x) uw_4(x) c_4(x) $$
+
+(here we assume that transaction abort automatically released all its locks)
 
 Immediate restart
 ===
