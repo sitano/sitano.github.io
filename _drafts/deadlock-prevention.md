@@ -10,7 +10,7 @@ desc: A showcase of how the deadlock prevention algorithms work like wait-die, w
 Many concurrency control (CC) [[2]] algorithms may run into a deadlock
 situation [[3]] (2PL [[4]] and derivatives). There are 2 different
 approaches to workaround the situation: detecting deadlocks and
-preventing deadlocks. Let’s take a look at how preventing 
+preventing deadlocks. Let’s take a look at how preventing
 deadlocks algorithms works with an arbitrary CC.
 
 The system consists of a Transaction Manager (TM) that receives
@@ -34,6 +34,15 @@ Semantically correct locking of $$ s $$ for this figure
 is pretty straight forward. $$ {r_1(x), r_2(x)} $$ will
 obtain shared read lock and the corresponding write
 operation will fail to upgrade it to exclusive lock.
+
+Note. In simple words well-formed locking is a form of a schedule
+where all read and writes operations perform under corresponding
+shared or exclusive locks, locks and unlocks are semantically correct
+(lock < op < unlock), there is no transitive redundency of locks
+(no lock < op(x) < lock < x < ... or unlock < unlock).
+
+Note. Main 2PL property is that transaction acquires all lock
+before releasing them (no lock(x) < unlock(x) < lock(y)).
 
 Deadlock is easy to see here highlighted with the red arrows:
 
@@ -80,9 +89,10 @@ The same thing happens for the $$ w_4(x) \in t_4 $$:
 $$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 $$
 
 Then we receive $$ w_1(x) $$ from $$ t_1 $$. $$ ts(t_1)\ <\ ts(t_2) $$
-thus $$ lw_1(x) $$ (along the $$ t_1 $$) blocks waiting for the $$ t_1 $$. 
+thus $$ lw_1(x) $$ (along the $$ t_1 $$) blocks waiting for the $$ t_2 $$
+to release shared lock on $$ x $$.
 
-As $$ t_1 $$ is blocked, next command we receive will be $$ w_2(x) $$.
+$$ t_1 $$ is blocked, so $$ c_1 $$ queued. Next command we receive is $$ w_2(x) $$.
 $$ ts(t_2)\ >\ ts(t_1) $$ and $$ lw_2(x) $$ can't block waiting for $$ t_1 $$.
 Thus $$ t_2 $$ aborts:
 
@@ -92,39 +102,66 @@ Now, we can finish $$ t_1 $$ because aborted $$ t_2 $$ released shared lock:
 
 $$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 a_2 lw_1(x) w_1(x) uw_1(x) c_1 $$
 
-(here we assume that transaction abort automatically released all its locks)
+(here we assume that transaction abort automatically releases all of its locks)
 
 Wound-wait
 ===
 
 Receiving $$ w_3(x) $$ must block $$ t_3 $$ for $$ t_1,\ t_2 $$. Indeed,
 $$ ts(t_3)\ >\ ts(t_1) \land ts(t_3)\ >\ ts(t_2) $$. Hence $$ t_3 $$
-is younger it will block and wait for $$ t_1 $$ and $$ t_2 $$ lock release.
-Thus we are still having:
+is younger it will block and wait for $$ t_1 $$ and $$ t_2 $$ to release
+the lock. Thus we are still having:
 
-$$ lr_1(x) r_1(x) lr_2(x) r_2(x) $$, t_3 waits
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x), \{t_3\} \text{ queued} $$
 
-The same thing happens for the $$ w_4(x) \in t_4 $$: 
+The same thing happens for the $$ w_4(x) \in t_4 $$:
 
-$$ lr_1(x) r_1(x) lr_2(x) r_2(x) $$, {t_3, t_4} waits
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x), \{t_3, t_4 \}\text{ queued} $$
 
 Then we receive $$ w_1(x) $$ from $$ t_1 $$. $$ ts(t_1)\ <\ ts(t_2) $$
 thus $$ lw_1(x) $$ wounds $$ t_2 $$ that holds shared lock by issuing $$ a_2 $$:
 
-$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1 $$, {t_3, t_4} waits
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1, \{t_3, t_4\}\text{ queued} $$
 
-Now, we can finish $$ t_3 $$ and $$ t_4 $$:
+(here we assume that transaction abort automatically releases all of its locks)
+
+Now, the wait queue consist of $$ t_3 $$ and $$ t_4 $$:
+
+$$ w_3(x) w_4(x) c_3 c_4 $$
+
+Now we easily output $$ lw_3(x) w_3(x) $$:
 
 $$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1
-lw_3(x) w_3(x) uw_3(x) c_3(x)
-lw_4(x) w_4(x) uw_4(x) c_4(x) $$
+lw_3(x) w_3(x) $$
 
-(here we assume that transaction abort automatically released all its locks)
+Next comes in $$ w_4(x) $$.
+
+$$ ts(t_4) > ts(t_3) $$ hence $$ t_4 $$ blocks in favor of $$ t_3 $$.
+
+Luckily, the next command $$ c_3 $$ commits $$ t_3 $$ and we can finish
+$$ t_4 $$:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 lw_1(x) w_1(x) uw_1(x) c_1
+lw_3(x) w_3(x) uw_3(x) c_3 lw_4(x) w_4(x) uw_4(x) c_4 $$
 
 Immediate restart
 ===
 
-TODO
+$$ w_3(x) $$ and $$ w_4(x) $$ must block for $$ t_1,\ t_2 $$ so $$ \{t_3, t_4\} $$ abort:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 $$
+
+Then we receive $$ w_1(x) $$ from $$ t_1 $$, but $$ w_1(x) $$ can't upgrade
+it's sharing lock, because it is also obtained by the $$ t_2 $$ so it must block.
+Instead of block, we issue abort:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 a_1 $$
+
+(here we assume that transaction abort automatically releases all of its locks)
+
+Now $$ t_2 $$ can successfully finish:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 a_1 lw_2(x) w_2(x) uw_2(x) c_2 $$
 
 Running priority
 ===
