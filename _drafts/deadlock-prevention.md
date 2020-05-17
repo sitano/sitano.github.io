@@ -38,11 +38,12 @@ operation will fail to upgrade it to exclusive lock.
 Note. In simple words well-formed locking is a form of a schedule
 where all read and writes operations perform under corresponding
 shared or exclusive locks, locks and unlocks are semantically correct
-(lock < op < unlock), there is no transitive redundency of locks
-(no lock < op(x) < lock < x < ... or unlock < unlock).
+($$ lock_i(x) < op_i(x) < unlock_i(x) $$), plus there is no transitive
+redundancy of locks (no $$ lock_i(x) < op_i(x) < lock_i(x) ... $$ or
+$$ unlock_i(x) < unlock_i(x) $$).
 
 Note. Main 2PL property is that transaction acquires all lock
-before releasing them (no lock(x) < unlock(x) < lock(y)).
+before releasing them (no $$ unlock_i(x) < lock_i(y) $$).
 
 Deadlock is easy to see here highlighted with the red arrows:
 
