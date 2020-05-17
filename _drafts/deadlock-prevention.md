@@ -166,6 +166,48 @@ $$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_3 a_4 a_1 lw_2(x) w_2(x) uw_2(x) c_2 $$
 Running priority
 ===
 
+Receiving $$ w_3(x) $$ must block $$ t_3 $$ for $$ t_1,\ t_2 $$. Indeed,
+$$ \{t_1, t_2\} $$ are not blocked.
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x), \{t_3\} \text{ queued} $$
+
+Next comes $$ w_4(x) $$ that must also block for $$ t_1,\ t_2 $$ and again
+$$ \{t_1, t_2\} $$ are not blocked.
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x), \{t_3, t_4\} \text{ queued} $$
+
+Now we receive $$ w_1(x) $$, but $$ t_2 $$ holds shared lock on $$ x $$
+and is not block, so $$ w_1(x) $$ queued:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x), \{t_3, t_4, t_1\} \text{ queued} $$
+
+Now we receive $$ w_2(x) $$. $$ t_1 $$ holds shared lock on $$ x $$ and
+is blocked waiting for $$ t_2 $$. Hence $$ t_2 $$ can't block on $$ t_1 $$
+and must be aborted:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2, \{t_3, t_4, t_1\} \text{ queued} $$
+
+(here we assume that transaction abort automatically releases all of its locks)
+
+Now, the wait queue consist of:
+
+$$ w_3(x) w_4(x) w_1(x) c_1 c_3 c_4 $$
+
+$$ t_1 $$ still holds the shared lock, so ongoing writes from $$ \{t_3, t_4\} $$
+must be aborted:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 a_3 a_4, \{ t_1\} \text{ queued} $$
+
+And the $$ t_1 $$ can now finish:
+
+$$ lr_1(x) r_1(x) lr_2(x) r_2(x) a_2 a_3 a_4 lw_1(x) w_1(x) uw_1(x) c_1 $$
+
+Theoretically, the CC could resort blocked transactions in favor of
+processing ones that has more locks first ($$ t_1 $$). In that case
+the transactions that are also blocked but have dependencies on others
+that are also blocked could have more chances to be committed without
+a restart.
+
 ## References
 
 - [Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition][1].
