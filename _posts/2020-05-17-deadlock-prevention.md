@@ -7,11 +7,25 @@ mathjax: true
 desc: A showcase of how the deadlock prevention algorithms work like wait-die, wound-wait and prioritization.
 ---
 
+Once upon a time, I was interviewed for a database engineering
+position. I was asked about what deadlock prevention algorithms
+do I know. I could not name a few (besides detection and randomization)
+and I was rejected. It was an unsatisfying experience because
+the ideas behind those algorithms happened to be pretty simple
+and the algorithms are small. There is nothing special to it.
+
+However, besides that simplicity alone, the databases contain a lot of
+different algorithms that work together. They are combined in
+a non-trivial manner and it is hard to catch the whole picture.
+In this article, I offer a view on how the concurrency control
+algorithms work together with the deadlock prevention algorithms
+in a graphical way.
+
 Many concurrency control (CC) [[2]] algorithms may run into a deadlock
 situation [[3]] (2PL [[4]] and derivatives). There are 2 different
-approaches to workaround the situation: detecting deadlocks and
-preventing deadlocks. Let’s take a look at how preventing
-deadlocks algorithms works with an arbitrary CC.
+approaches to solve that: detecting deadlocks and preventing deadlocks.
+Let’s take a look at how preventing deadlocks algorithms works
+with an arbitrary CC.
 
 The system consists of a Transaction Manager (TM) that receives
 a stream of commands, feeds it into the concurrency control (CC)
@@ -208,6 +222,17 @@ processing ones that has more locks first ($$ t_1 $$). In that case
 the transactions that are also blocked but have dependencies on others
 that are also blocked could have more chances to be committed without
 a restart.
+
+Conclusion
+===
+
+Many concurrency control algorithms are subject to deadlocks situations.
+There are 2 approaches to avoid deadlocks: detection and prevention.
+There are different variants of those algorithms based on ordering or
+priorities. We have shown how various deadlock prevention algorithms
+work together with concurrency control algorithms in a graphical way,
+how deadlocks may appear in locking algorithms such as 2PL and how
+they can be resolved in real time.
 
 ## References
 
