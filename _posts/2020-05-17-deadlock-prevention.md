@@ -39,7 +39,7 @@ commands -> TM -> CC -> schedule -> DM
 
 ```
 
-Let our CC be a classic 2PL (two-phase commit). The stream
+Let our CC be a classic 2PL (two-phase locking). The stream
 of the commands that we will be receiving will be:
 
 $$ s\ =\ r_1(x) r_2(x) w_3(x) w_4(x) w_1(x) c_1 w_2(x) c_2 c_3 c_4 $$
