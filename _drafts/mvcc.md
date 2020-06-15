@@ -15,18 +15,11 @@ Plan:
 - monoversion histories
 - mv serializability
 
-2. An example of serializability testing
 
-- testing MCSR
-- testing MVSR wrong and right
 
-3. An example of how MVCC schedulers work
+---
 
-- MVCC+M2PL
-- ROMV
-
-4. Anomalies in SI and SSI
-
+Multi-version histories
 ---
 
 In conventional histories in any point in time there exists only one version of a variable.
@@ -50,17 +43,17 @@ $$ w_1(x_1) w_2(x_2) r_3(x_1), h(r_3(x)) = w_1(x_1) $$
 
 Here we have a writes that create versions of a variable $$ x $$. And the read that
 reads one version of $$ t_1 $$. Function $$ h $$ is called a version function. With
-the version function multi-version histories comes into play.
+the version function the multi-version histories comes into play.
 
-What are multi-version (mv) histories? It is histories with the version function that says
-who reads what. A read can read one of the previously written versions of a variable.
+Such histories like one above are called multi-version (mv) histories. It is histories
+with the version function that says who reads what. A read operation can read one of
+the previously written versions of a variable. If the version function always returns
+the latest version for reads the history called monoversion. Conventional histories
+are equivalent to corresponding monoversion variants.
 
-If the version function always returns the latest version for reads the history called
-monoversion. Conventional histories are equivalent to corresponding monoversion variants.
-
-But so what one could say that we can have mv-histories? Weikum & Wossen gives a
-great example of how much bigger the power of scheduling can be with the mv-histories.
-Consider following history:
+With mv histories we can produce more serializable histories even if some of the operations
+arrive late. Weikum & Wossen gives a great example of how much bigger the power of
+scheduling can be with the mv-histories. Consider the following history:
 
 $$ s = r_1(x) w_1(x) r_2(x) w_2(y) r_1(y) w_1(z) c_1 c_2 $$
 
@@ -91,9 +84,51 @@ That is a monoversion history that is equivalent to $$ s_2 $$ and $$ s_2 \in CSR
 
 Thus multi-versioning allows more histories to be serializable even though
 serializability notions for mv-histories significantly differ. This comes from
-the fact that different writes on the same variable are no more create conflicts
-because they don't effect each other, they only create different versions. The
-similar history is there for the _wr_ pairs.
+the fact that different writes on the same variable no more create conflicts
+because they don't effect each other, they only create different versions and
+thus different opportunities for following read operations. Similar story
+is there for the _wr_ pairs.
+
+Let's take a look at how serializability works in case of MV-histories.
+
+Multi-version serializability
+---
+
+There are 2 kinds of MV serializability:
+
+- MVSR - multi-version view serializability
+- MCSR - multi-version conflict serializability
+
+The relation between classes is as follows:
+
+$$ CSR \subset MCSR \subset MVSR \subset {histories} \\ $$
+$$ CSR \subset VSR \subset MVSR\\ $$
+
+MVSR is defined by the analogy with the VSR equivalence relation:
+$$ RF(s) = RF(s') $$ where $$ RF $$ is a _read-from_ relation and
+$$ s' $$ is serial monoversion history.
+
+TODO: irrelevance of the final view
+
+MCSR by analogy with CSR is a class in which for a history $$ s $$
+$$ \exists s' - {serial monoversion} | CS(s) $$
+
+TODO: asymmetry of the MCSR def and CS
+
+Checking serializability
+---
+
+- testing MCSR
+- testing MVSR wrong and right
+
+MVCC schedulers
+---
+
+- MVCC+M2PL
+- ROMV
+
+Anomalies in SI and SSI
+---
 
 ## References
 
