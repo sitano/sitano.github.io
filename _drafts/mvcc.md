@@ -127,8 +127,61 @@ continue with the MVSR with this example:
 
 $$ m = w_0(x_0) w_0(y_0) c_0 w_1(x_1) c_1 r_2(x_1) w_2(y_2) c_2 r_3(y_0) w_3(x_3) c_3 $$
 
-- testing MCSR
-- testing MVSR wrong and right
+Let's draw a multi-version conflict graph (MVCG):
+
+![]({{ Site.url }}/public/mvcc/mv_conflict_graph.png)
+
+MVCG has no cycles and thus is acyclic. Hence $$ m \in MCSR $$. For even
+greater simplicity let's take a look at the $$ m $$ step-graph along with
+the MV conflict set. It will show in a graphical way where from the single
+conflict edge $$ x $$ originates from and what we can commute to get
+serial monoversion history $$ m' $$ that will be $$ m \approx_c m' $$.
+
+![]({{ Site.url }}/public/mvcc/mv_step_graph_wcs.png)
+
+Now let's commute $$ m $$ to find $$ m' $$. What can confuse here is that
+the history $$ m $$ is already serial but not monoversion. Intuitively, what
+you would want to do is to have $$ m' = t_0 t_3 t_1 t_2 $$ but it is incorrect,
+because reverses conflict pair $$ (r_2(x_1), w_3(x_3)) $$ which we can't commute.
+So the only chance we have is to move $$ t_0 $$ forward commuting operations
+1-by-1:
+
+$$
+m = w_0(x_0) w_0(y_0) c_0 w_1(x_1) c_1 r_2(x_1) w_2(y_2) c_2 r_3(y_0) w_3(x_3) c_3 \\
+[ w_0(x_0) w_0(y_0) c_0 ] [ w_1(x_1) c_1 r_2(x_1) w_2(y_2) c_2 ] r_3(y_0) w_3(x_3) c_3 \\
+[ w_1(x_1) c_1 r_2(x_1) w_2(y_2) c_2 ] [ w_0(x_0) w_0(y_0) c_0 ] r_3(y_0) w_3(x_3) c_3 \\
+m' = w_1(x_1) c_1 r_2(x_1) w_2(y_2) c_2 w_0(x_0) w_0(y_0) c_0 r_3(y_0) w_3(x_3) c_3 \\
+m' = t_1 t_2 t_0 t_3 \\
+\approx \\
+s' = w_1(x) c_1 r_2(x) w_2(y) c_2 w_0(x) w_0(y) c_0 r_3(y) w_3(x) c_3 \\
+= t_1 t_2 t_0 t_3
+$$
+
+So fun part is that we move our transactions $$ t_1, t_2 $$ back in time behind
+the $$ t_0 $$ which is initial state transaction. However, commuting $$ t_0 $$
+does not prevent us from imagining proper serial monoversion history even tho
+it is equivalent to the history when we send our transaction even further back
+in time.
+
+The conflicts of $$ m $$ occur in the same order in $$ m' $$ so we are good:
+
+![]({{ Site.url }}/public/mvcc/mvsm_step_graph_wcs.png)
+
+We have proved that $$ m \in MCSR $$ and found serial monoversion $$ m' $$
+such that $$ m \approx_c m' $$.
+Now let's take a look at how $$ m $$ looks like in MVSR. We already know
+that $$ MCSR \subset MVSR $$ so $$ m \in MCSR \Rightarrow m \in MVSR $$.
+
+But in anyway, you can think that $$ m' $$ that we found for MCSR will be
+sufficient for MVSR. Let's check it!
+
+First of all, let's prove one more time that $$ m \in MVSR $$. To do that
+we need to build multi-version serializability graph (MVSG) to see it is
+acycle. But we can't just do that. We need version ordering relation. In
+anyway, MVSR is defined as $$ RF(m) = RF(m') $$, so let's start with the
+step-graph with read-from relation:
+
+![]({{ Site.url }}/public/mvcc/mv_step_graph_wrf.png)
 
 MVCC schedulers
 ---
@@ -146,4 +199,4 @@ Anomalies in SI and SSI
 
 [1]: https://www.amazon.com/Transactional-Information-Systems-Algorithms-Concurrency/dp/1558605088 "Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition by Gerhard Weikum, Gottfried Vossen, Morgan Kaufmann; 1 edition (June 4, 2001)"
 [2]: https://en.wikipedia.org/wiki/Concurrency_control
-[3]: https://dl.acm.org/doi/10.1145/325405.325417 "Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985"
+[3]: https://www.sciencedirect.com/science/article/pii/002200008690022X "Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985"
