@@ -28,9 +28,11 @@ graphs/every graph/.style={edges=rounded corners}]
   \coordinate (c3)   at (9.3,1);
 
   % mvcs = {(r_2(x_1), w_3(x_3))}
-  % \draw [red,->,-{Stealth[length=2mm]}] (w0x0) to [out=320] (w1x1);
   \draw [blue,->,-{Stealth[length=2mm]}] (w0y0) to [out=320] (r3y0);
   \draw [blue,->,-{Stealth[length=2mm]}] (w1x1) -- (r2x1);
+  \draw [red,->,-{Stealth[length=2mm]}] (r2x1) to [out=170,in=310] (w0x0);
+  \draw [red,->,-{Stealth[length=2mm]}] (r2x1) to [out=340] (w3x3);
+  \draw [red,->,-{Stealth[length=2mm]}] (w2y2) to [out=90,in=30] (w0y0);
 
   % step graph
   \filldraw (w0x0) circle [radius=2pt] node [label=above:$w_0(x_0)$] {};
