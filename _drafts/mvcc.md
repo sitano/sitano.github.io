@@ -4,7 +4,7 @@ title: Multi-version concurrency control serializability
 categories: [theory, databases]
 tags: [theory, databases, examples, transactions, deadlock]
 mathjax: true
-desc: An example of testing a multi-version schedule serializability and an application of MVCC schedulers
+desc: A story about MVCC - what are multi-version histories and how mv-schedulers work.
 ---
 
 Multi-version histories
@@ -243,10 +243,77 @@ $$
 MVCC schedulers
 ---
 
-- MVCC+M2PL
+We have seen what is MV serializability, how it is defined and works.
+Now it is time to take a look at algorithms that can produce mv-serializable
+schedulers. Let's start with the following history sample:
+
+$$ s = r_1(x) r_2(x) r_3(y) w_2(x) w_1(y) c_1 w_2(z) w_3(z) r_3(x) c_3 r_2(y) c_2 $$
+
+First of all we will find out if $$ s $$ is multi-version serializable and
+then take a look at the schedulers output. If $$ s $$ is mv-serializable
+it must have a version function that matches serializability criteria. But
+even before that, we can test it for mv-conflict/serializability graph acyclicity.
+
+Here is our step-graph:
+
+![]({{ Site.url }}/public/mvcc/mv_step_graph2.png)
+
+It is easy to imagine what possible mv-serializable schedule would likely have in
+conflicts and versions. The version function will map writes to unique variables
+versions anyway: $$ h(w_i(a)) = w_i(a_i) $$. Also, it will map reads to the latest
+versions at least if there are only single one of them: $$ h(r_1(x)) = w_0(x_0) $$,
+$$ h(r_2(x)) = w_0(x_0) $$, $$ h(r_3(y)) = w_0(y_0) $$.
+
+![]({{ Site.url }}/public/mvcc/mv_step_graph3.png)
+
+We have drawn all possible mv-conflicts and even tho we did not define versions for
+$$ \{ r_3(x), r_2(y) \} $$ what ever they will be, they will not contribute to the
+mv-conflict set. Thus, we can now choose what ever we like and let's pick last
+committed versions.
+
+$$ m = w_0(x) w_0(y) c_0 r_1(x_0) r_2(x_0) r_3(y_0) w_2(x_2) w_1(y_1) c_1 w_2(z_2) w_3(z_3) r_3(x_1) c_3 r_2(y_1) c_2 $$
+
+$$ m $$ mv-conflict graph is acycle and hence $$ m \in MCSR \Rightarrow m \in MVSR $$.
+
+It's easy to pick proper $$ m' $$ for $$ m \in MCSR $$ based on restrictions implied
+by the conflict edges:
+
+$$
+t_1 < t_2, t_3 < t1 \\
+\Rightarrow \\
+t_3 < t_1 < t_2 \\
+\Rightarrow \\
+m' = t_0 t_3 t_1 t_2 \\
+= w_0(x_0) w_0(y_0) c_0 [r_3(y_0) w_3(z_3) r_3(x_1) c_3] [r_1(x_0) w_1(y_1) c_1] r_2(x_0) w_2(x_2) w_2(z_2) r_2(y_1) c_2 \\
+\approx \\
+= w_0(x) w_0(y) c_0 [r_3(y) w_3(z) r_3(x) c_3] [r_1(x) w_1(y) c_1] r_2(x) w_2(x) w_2(z) r_2(y) c_2 \\
+m' - {serial\ monoversion}\ | \\
+r_1(x_0) <_m w_2(x_2) \land r_1(x_0) <_{m'} w_2(x_2) \\
+r_2(y_0) <_m w_1(y_1) \land r_2(y_0) <_{m'} w_1(y_1) \\
+\Rightarrow \\
+MVCG(m) \subset MVCG(m') \\
+\Rightarrow \\
+m \in MCSR
+$$
+
+MV2PL
+---
+
+Now, when we are sure that $$ m \in MCSR $$ and what are one possible variant of the
+version function for it, let's take a look what we will have with MVCC scheduling
+algorithms. And we will start with the basic multi-version 2-phase locking scheduler.
+
+All scheduling algorithms that respect 2PL rule have different handling of internal
+and the final steps of the transactions.
+
+MV2PL in it's basic variant can be implemented in a way to allow dirty reads
+or not allowing them. Most of the books omit how the implementation must use
+locks to ensure 2PL ruling and I will try here to get a glimpse on it.
+
+- M2PL
 - ROMV
 
-Anomalies in SI and SSI
+Anomalies in SI
 ---
 
 ## References
