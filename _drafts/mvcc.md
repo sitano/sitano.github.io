@@ -296,22 +296,100 @@ MVCG(m) \subset MVCG(m') \\
 m \in MCSR
 $$
 
+MVTO
+---
+
+Now, when we are sure that $$ m $$ is mv-serializable and what one possible variant of
+the version function looks like, let's take a look what we will get with the scheduling
+algorithms. We will start with the pessimistic non-locking MV Timestamp Ordering (MVTO)
+scheduler.
+
+MVTO tracks a timestamp for every transaction that corresponds to it's first operation.
+
+For $$ s $$ we will have:
+
+$$
+s = r_1(x) r_2(x) r_3(y) w_2(x) w_1(y) c_1 w_2(z) w_3(z) r_3(x) c_3 r_2(y) c_2 \\
+r_1(x) <_s r_2(x) <_s r_3(y) \\
+ts(t_1) < ts(t_2) < ts(t_3)
+$$
+
+Now we can produce an mv-schedule by outputting operations according to these rules:
+
+1. $$ r_i(x) \to\ r_i(x_k)\ |\ w_k(x_k) < r_i(x) \land ts(t_k) < ts(t_i) \land i \neq k $$
+2. $$ w_i(x) \to\ w_i(x_i)\ if\ \nexists\ step\ r_j(x_k)\ |\ ts(t_k) < ts(t_i) < ts(t_j), a_i\ otherwise $$
+3. $$ c_i $$ is delayed until all transactions that have written new versions of data
+   items read by $$ t_i $$ have been processed.
+
+Based on these rules we are getting:
+
+| Input          | Output         | Rule                |
+| -----          | ------         | ----                |
+| $$ w_0(x) $$   | $$ w_0(x_0) $$ | initial value       |
+| $$ w_0(y) $$   | $$ w_0(y_0) $$ | initial value       |
+| $$ c_0    $$   | $$ c_0      $$ | initial transaction |
+| $$ r_1(x) $$   | $$ r_1(x_0) $$ | rule 1              |
+| $$ r_2(x) $$   | $$ r_2(x_0) $$ | rule 1              |
+| $$ r_3(y) $$   | $$ r_3(y_0) $$ | rule 1              |
+| $$ w_2(x) $$   | $$ w_2(x_2) $$ | rule 2: $$ \exists\ r_1(x_0)\ \| ts(t_0) < ts(t_1) < ts(t_2) $$ |
+| $$ w_1(y) $$   | $$ a_1      $$ | rule 2: $$ \exists\ r_3(y_0)\ \| ts(t_0) < ts(t_1) < ts(t_3) $$ |
+| $$ w_2(z) $$   | $$ w_2(z_2) $$ | rule 2: no one read z |
+| $$ w_3(z) $$   | $$ w_3(z_3) $$ | rule 2: no one read z |
+| $$ r_3(x) $$   | $$ r_3(x_2) $$ | rule 1                |
+| $$ c_3    $$   | wait $$ t_2 $$ | rule 3: $$ c_3 $$ delayed until $$ t_2 $$ because $$ r_3(x_2) $$ was issued and $$ t_2 $$ did not commit yet: $$ t3 \to t2 $$ |
+| $$ r_2(y) $$   | $$ r_2(y_0) $$ | rule 1                |
+| $$ c_2    $$   | $$ c_2      $$ | rule 2: $$ t_2 $$ did not read any uncommitted values |
+| queued $$ c_3$$| $$ c_3      $$ | rule 3: $$ t_2 $$ has been committed, so we can commit $$ t_3 $$ |
+
+Result is:
+
+$$
+m = w_0(x_0) w_0(y_0) c_0 r_1(x_0) r_2(x_0) r_3(y_0) w_2(x_2) a_1 w_2(z_2) w_3(z_3) r_3(x_2) r_2(y_0) c_2 c_3 \\
+\approx \\
+m = w_0(x_0) w_0(y_0) c_0          r_2(x_0) r_3(y_0) w_2(x_2)     w_2(z_2) w_3(z_3) r_3(x_2) r_2(y_0) c_2 c_3
+$$
+
+MVTO guarantees at least MVSR but we were lucky enough to get $$ m \in MCSR $$ with 1 transaction aborted:
+
+$$
+m = w_0(x_0) w_0(y_0) c_0          r_2(x_0) r_3(y_0) w_2(x_2)     w_2(z_2) w_3(z_3) r_3(x_2) r_2(y_0) c_2 c_3 \\
+\approx_c \\
+m' = t_0 t_2 t_3 \\
+MVCG(m) = \{\}
+$$
+
 MV2PL
 ---
 
-Now, when we are sure that $$ m \in MCSR $$ and what are one possible variant of the
-version function for it, let's take a look what we will have with MVCC scheduling
-algorithms. And we will start with the basic multi-version 2-phase locking scheduler.
+MV2PL family of scheduling algorithms is based on conforming the 2PL rule:
+A transaction is said to satisfy the two-phase locking (2PL)
+protocol if all of its locking operations precede all of its unlock operations.
 
-All scheduling algorithms that respect 2PL rule have different handling of internal
-and the final steps of the transactions.
+Most of them have different handling of the internal and the final steps
+of the transactions. Usually they are relaxed on the write conflicts but
+the written versions must be certified.
 
-MV2PL in it's basic variant can be implemented in a way to allow dirty reads
-or not allowing them. Most of the books omit how the implementation must use
-locks to ensure 2PL ruling and I will try here to get a glimpse on it.
+In MV2PL transactions can write as many versions as they want but can
+read only latest version that was certified right before the transaction start.
+The scheduler makes sure that at each point in time there is at most one
+uncommitted version of any data item.
 
-- M2PL
-- ROMV
+MV2PL as well as 2V2PL uses 3 types of locks: read, write and certify.
+MV2PL uses the following locks compatibility matrix:
+
+|            | Holder | $$ r(x) $$ | $$ w(x) $$ | $$ c(x) $$ |
+| -------    | ------ | ---------- | ---------- | ---------- |
+| Request    |        |            |            |            |
+| $$ r(x) $$ |        |     +      |     +      |     -      |
+| $$ w(x) $$ |        |     +      |     +      |     +      |
+| $$ c(x) $$ |        |     -      |     +      |     -      |
+
+
+2V2PL
+---
+
+ROMV
+---
 
 Anomalies in SI
 ---
@@ -319,8 +397,11 @@ Anomalies in SI
 ## References
 
 - [Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition][1].
+- [Managing Information Technology Resources in Organizations in the Next Millennium: 1999 Information Resources Management Association International Conference, Hershey, PA, USA, May 16-19, 1999][2].
 - [Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985][3].
+- [Information Systems Security: Third International Conference, ICISS 2007, Delhi, India, December 16-20, 2007, Proceedings][4].
 
 [1]: https://www.amazon.com/Transactional-Information-Systems-Algorithms-Concurrency/dp/1558605088 "Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition by Gerhard Weikum, Gottfried Vossen, Morgan Kaufmann; 1 edition (June 4, 2001)"
-[2]: https://en.wikipedia.org/wiki/Concurrency_control
+[2]: https://books.google.ru/books?id=pLIXL0fA_j8C
 [3]: https://www.sciencedirect.com/science/article/pii/002200008690022X "Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985"
+[4]: https://books.google.ru/books?id=lNdrCQAAQBAJ 
