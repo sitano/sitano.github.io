@@ -355,7 +355,6 @@ $$
 m = w_0(x_0) w_0(y_0) c_0          r_2(x_0) r_3(y_0) w_2(x_2)     w_2(z_2) w_3(z_3) r_3(x_2) r_2(y_0) c_2 c_3 \\
 \approx_c \\
 m' = t_0 t_2 t_3 \\
-MVCG(m) = \{\}
 $$
 
 MV2PL
@@ -370,12 +369,14 @@ of the transactions. Usually they are relaxed on the write conflicts but
 the written versions must be certified.
 
 In MV2PL transactions can write as many versions as they want but can
-read only latest version that was certified right before the transaction start.
-The scheduler makes sure that at each point in time there is at most one
-uncommitted version of any data item.
+read only the latest current version. Depending on the protocol variant
+the current version may allow reading only the latest certified committed
+versions or also an uncommitted version. The scheduler makes sure that
+at each point in time there is at most one uncommitted version of any
+data item.
 
 MV2PL as well as 2V2PL uses 3 types of locks: read, write and certify.
-MV2PL uses the following locks compatibility matrix:
+MV2PL uses the following locks compatibility [matrix][4]:
 
 |            | Holder | $$ r(x) $$ | $$ w(x) $$ | $$ c(x) $$ |
 | -------    | ------ | ---------- | ---------- | ---------- |
@@ -384,9 +385,58 @@ MV2PL uses the following locks compatibility matrix:
 | $$ w(x) $$ |        |     +      |     +      |     +      |
 | $$ c(x) $$ |        |     -      |     +      |     -      |
 
+That result into the following rules:
+
+1. If the step is not final within a transaction:
+   - (a) $$ r_i(x) \to r_i(x_j) $$ where $$ x_j $$ is the current version
+of the requested data item;
+   - (b) $$ w_i(x) \to w_i(x_i) $$ if there are no uncommitted versions of x.
+2. If the step is final within transaction $$ t_i $$ it is delayed until the following
+   types of transactions are committed:
+   - (a) all those $$ t_j $$ that have read the data item written by $$ t_i $$
+   - (b) all those $$ t_j $$ from which $$ t_i $$ has read
+
+Applying these rules we are getting:
+
+| Input          | Output                         | Rule                                                   |
+| -----          | ------                         | ----                                                   |
+| $$ w_0(x) $$   | $$ wl_0(x) w_0(x_0) $$         | initial value                                          |
+| $$ w_0(y) $$   | $$ wl_0(y) w_0(y_0) $$         | initial value                                          |
+| $$ c_0    $$   | $$ cl_0(x) cl_0(y) ul_0 c_0 $$ | certify locks, full unlock, commit initial transaction |
+| $$ r_1(x) $$   | $$ rl_1(x) r_1(x_0) $$         | rule (1.a) |
+| $$ r_2(x) $$   | $$ rl_2(x) r_2(x_0) $$         | rule (1.a) |
+| $$ r_3(y) $$   | $$ rl_3(x) r_3(y_0) $$         | rule (1.a) |
+| $$ w_2(x) $$   | $$ wl_2(x) w_2(x_2) $$         | rule (1.b) |
+| $$ w_1(y) $$   | $$ wl_1(y) w_1(y_1) $$         | rule (1.b) |
+| $$ c_1    $$   | wait $$ t_3: r_3(y) $$         | rule (2.a): $$ t_1 $$ must certify write $$ w_1(y_1) $$ before commit but $$ y_0 $$ was read by $$ t_3 $$ |
+| $$ w_2(z) $$   | $$ wl_2(z) w_2(z_2) $$         | rule (1.b) |
+| $$ w_3(z) $$   | $$ wl_3(z) w_3(z_3) $$         | rule (1.b) |
+| $$ r_3(x) $$   | $$ rl_3(x) r_3(x_0) $$         | rule (1.a): let us not to allow dirty reads |
+| $$ c_3    $$   | $$ cl_3(z) ul_3 c_3 $$         | rule (2)   |
+| $$ r_2(y) $$   | $$ rl_2(y) r_2(y_0) $$         | rule (1.a): let us not to allow dirty reads |
+| $$ c_2    $$   | wait $$ t_1: r_1(x) $$         | rule (2.a): $$ t_2 $$ must certify write $$ w_2(x_2) $$ before commit but $$ x_0 $$ was read by $$ t_1 $$ |
+|                | deadlock $$ \{ t_1, t_2 \} $$  | we have a wait cycle: $$ t_1 \to t_2 \to t_1 $$
+
+Even though we know that $$ s $$ can be mv-serialized MV2PL failed to
+produce nice schedule for us. What we have got is only the 1 committed
+transaction $$ t_3 $$ and 2 deadlocked transactions.
 
 2V2PL
 ---
+
+2V2PL is a MV2PL variant in which number of versions per items is limited by 2:
+pre-image and after-image. This is a nice property because it allows to reduce
+storage utilization.
+
+The algorithm also uses 3 locks but with different compatibility matrix [[1]] [[4]]:
+
+|            | Holder | $$ r(x) $$ | $$ w(x) $$ | $$ c(x) $$ |
+| -------    | ------ | ---------- | ---------- | ---------- |
+| Request    |        |            |            |            |
+| $$ r(x) $$ |        |     +      |     +      |     -      |
+| $$ w(x) $$ |        |     +      |     -      |     -      |
+| $$ c(x) $$ |        |     -      |     -      |     -      |
+
 
 ROMV
 ---
@@ -404,4 +454,4 @@ Anomalies in SI
 [1]: https://www.amazon.com/Transactional-Information-Systems-Algorithms-Concurrency/dp/1558605088 "Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition by Gerhard Weikum, Gottfried Vossen, Morgan Kaufmann; 1 edition (June 4, 2001)"
 [2]: https://books.google.ru/books?id=pLIXL0fA_j8C
 [3]: https://www.sciencedirect.com/science/article/pii/002200008690022X "Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985"
-[4]: https://books.google.ru/books?id=lNdrCQAAQBAJ 
+[4]: https://books.google.ru/books?id=lNdrCQAAQBAJ
