@@ -390,7 +390,7 @@ That result into the following rules:
 1. If the step is not final within a transaction:
    - (a) $$ r_i(x) \to r_i(x_j) $$ where $$ x_j $$ is the current version
 of the requested data item;
-   - (b) $$ w_i(x) \to w_i(x_i) $$ if there are no uncommitted versions of x.
+   - (b) $$ w_i(x) \to w_i(x_i) $$ if there are no uncommitted versions of x, or waits otherwise
 2. If the step is final within transaction $$ t_i $$ it is delayed until the following
    types of transactions are committed:
    - (a) all those $$ t_j $$ that have read the data item written by $$ t_i $$
@@ -408,25 +408,25 @@ Applying these rules we are getting:
 | $$ r_3(y) $$   | $$ rl_3(x) r_3(y_0) $$         | rule (1.a) |
 | $$ w_2(x) $$   | $$ wl_2(x) w_2(x_2) $$         | rule (1.b) |
 | $$ w_1(y) $$   | $$ wl_1(y) w_1(y_1) $$         | rule (1.b) |
-| $$ c_1    $$   | wait $$ t_3: r_3(y) $$         | rule (2.a): $$ t_1 $$ must certify write $$ w_1(y_1) $$ before commit but $$ y_0 $$ was read by $$ t_3 $$ |
+| $$ c_1    $$   | wait $$ t_3: rl_3(y)$$         | rule (2.a): $$ t_1 $$ must certify write $$ w_1(y_1) $$ before commit but $$ y_0 $$ was read by $$ t_3 $$ |
 | $$ w_2(z) $$   | $$ wl_2(z) w_2(z_2) $$         | rule (1.b) |
 | $$ w_3(z) $$   | $$ wl_3(z) w_3(z_3) $$         | rule (1.b) |
 | $$ r_3(x) $$   | $$ rl_3(x) r_3(x_0) $$         | rule (1.a): let us not to allow dirty reads |
 | $$ c_3    $$   | $$ cl_3(z) ul_3 c_3 $$         | rule (2)   |
 | $$ r_2(y) $$   | $$ rl_2(y) r_2(y_0) $$         | rule (1.a): let us not to allow dirty reads |
-| $$ c_2    $$   | wait $$ t_1: r_1(x) $$         | rule (2.a): $$ t_2 $$ must certify write $$ w_2(x_2) $$ before commit but $$ x_0 $$ was read by $$ t_1 $$ |
+| $$ c_2    $$   | wait $$ t_1: rl_1(x)$$         | rule (2.a): $$ t_2 $$ must certify write $$ w_2(x_2) $$ before commit but $$ x_0 $$ was read by $$ t_1 $$ |
 |                | deadlock $$ \{ t_1, t_2 \} $$  | we have a wait cycle: $$ t_1 \to t_2 \to t_1 $$
 
-Even though we know that $$ s $$ can be mv-serialized MV2PL failed to
+Even though we know that $$ s $$ is mv-serializable MV2PL failed to
 produce nice schedule for us. What we have got is only the 1 committed
 transaction $$ t_3 $$ and 2 deadlocked transactions.
 
 2V2PL
 ---
 
-2V2PL is a MV2PL variant in which number of versions per items is limited by 2:
+2V2PL is a MV2PL variant in which number of versions per item is limited by 2:
 pre-image and after-image. This is a nice property because it allows to reduce
-storage utilization.
+storage utilization that is desirable for real world implementations.
 
 The algorithm also uses 3 locks but with different compatibility matrix [[1]] [[4]]:
 
@@ -437,9 +437,110 @@ The algorithm also uses 3 locks but with different compatibility matrix [[1]] [[
 | $$ w(x) $$ |        |     +      |     -      |     -      |
 | $$ c(x) $$ |        |     -      |     -      |     -      |
 
+Derived rules are the same as in MV2PL. Scheduling for $$ s $$ will be the following:
+
+| Input          | Output                         | Rule                                                   |
+| -----          | ------                         | ----                                                   |
+| $$ w_0(x) $$   | $$ wl_0(x) w_0(x_0) $$         | initial value                                          |
+| $$ w_0(y) $$   | $$ wl_0(y) w_0(y_0) $$         | initial value                                          |
+| $$ c_0    $$   | $$ cl_0(x) cl_0(y) ul_0 c_0 $$ | certify locks, full unlock, commit initial transaction |
+| $$ r_1(x) $$   | $$ rl_1(x) r_1(x_0) $$         | rule (1.a) |
+| $$ r_2(x) $$   | $$ rl_2(x) r_2(x_0) $$         | rule (1.a) |
+| $$ r_3(y) $$   | $$ rl_3(x) r_3(y_0) $$         | rule (1.a) |
+| $$ w_2(x) $$   | $$ wl_2(x) w_2(x_2) $$         | rule (1.b) |
+| $$ w_1(y) $$   | $$ wl_1(y) w_1(y_1) $$         | rule (1.b) |
+| $$ c_1    $$   | wait $$ t_3: rl_3(y)$$         | rule (2.a): $$ t_1 $$ must certify write $$ w_1(y_1) $$ before commit but $$ y_0 $$ was read by unfinished $$ t_3 $$, so that $$ t_3 $$ holds an incompatible read lock to the certify lock we want issue for $$ t_1 $$ |
+| $$ w_2(z) $$   | $$ wl_2(z) w_2(z_2) $$         | rule (1.b) |
+| $$ w_3(z) $$   | wait $$ t_2: wl_2(z)$$       | rule (1.b): $$ t_3 $$ must acquire write lock on $$ z $$, but there is incompatible lock held by $$ t_2 $$
+| $$ r_3(x) $$   | queued                         | blocked: $$ t_3 \to t_2 $$ |
+| $$ c_3    $$   | queued                         | blocked |
+| $$ r_2(y) $$   | $$ rl_2(y) r_2(y_0) $$         | rule (1.a) |
+| $$ c_2    $$   | wait $$ t_1: r_1(x) $$         | rule (2.a): $$ t_2 $$ must certify write $$ w_2(x_2) $$ before commit but $$ x_0 $$ was read by unfinished $$ t_1 $$, so that $$ t_1 $$ holds an incompatible read lock to the certify lock we want issue for $$ t_2 $$ |
+|                | all transactions deadlock      | we have a wait cycle: $$ t_1 \to t_3 \to t_2 \to t_1 $$
+
+Even though we know that $$ s $$ is mv-serializable 2V2PL failed as well to
+produce fine schedule. All transactions deadlock in loop involving all of them.
 
 ROMV
 ---
+
+ROMV goes even further than 2V2PL and offers a classical S2PL algorithm for
+update-transactions but optimizes read-only transactions with a non-blocking
+variant. It allows non-interfering long-running read-only transactions to be
+processed effectively - literally by reading versions committed before the start.
+It is especially useful for the web applications that usually do more reads than
+the writes.
+
+It may be not applicable to all use cases because requires to classify
+transactions in advance into _rw_, _ro_ categories.
+
+The rules for the ROMV are as follows:
+
+1. For _update_ transactions: obey S/S2PL. It's a classic 2PL plus transactions
+   must hold their write locks until the final step - commit. Versions timestamped
+   by the time of the transaction commit.
+
+2. For _read-only_ transactions: Transactions acquire are timestamped by their
+   beginning unlike the _update_ transactions. Read operations read the most
+   recently committed versions right before their transaction timestamp.
+
+S/S2PL is having the following compatibility matrix:
+
+|            | Holder | $$ r(x) $$ | $$ w(x) $$ |
+| -------    | ------ | ---------- | ---------- |
+| Request    |        |            |            |
+| $$ r(x) $$ |        |     +      |     -      |
+| $$ w(x) $$ |        |     -      |     -      |
+
+So we are getting:
+
+| Input          | Output                         | Rule                               |
+| -----          | ------                         | ----                               |
+| $$ w_0(x) $$   | $$ wl_0(x) w_0(x_0)  $$        | initial value                      |
+| $$ w_0(y) $$   | $$ wl_0(y) w_0(y_0)  $$        | initial value                      |
+| $$ c_0    $$   | $$ ul_0 c_0          $$        | unlock, commit initial transaction |
+| $$ r_1(x) $$   | $$ rl_1(x) r_1(x_0)  $$        | |
+| $$ r_2(x) $$   | $$ rl_2(x) r_2(x_0)  $$        | |
+| $$ r_3(y) $$   | $$ rl_3(y) r_3(y_0)  $$        | |
+| $$ w_2(x) $$   | wait $$ t_1: rl_1(x) $$        | $$ wl_2(x) $$ conflicts with $$ rl_1(x) $$ so $$ t_2 $$ blocks for $$ t_1 $$ |
+| $$ w_1(y) $$   | wait $$ t_3: rl_3(y) $$        | $$ wl_1(x) $$ conflicts with $$ rl_3(y) $$ so $$ t_1 $$ blocks for $$ t_3 $$ |
+| $$ c_1    $$   | queued                         | blocked by $$ t_3 $$ |
+| $$ w_2(z) $$   | queued                         | blocked by $$ t_1 $$ |
+| $$ w_3(z) $$   | $$ wl_3(z) w_3(z_3)  $$        | |
+| $$ r_3(x) $$   | $$ rl_3(x) r_3(x_0)  $$        | |
+| $$ c_3    $$   | $$ ul_3 c_3 $$                 | now $$ t_1 $$ may proceed |
+| $$ w_1(y) $$ q | $$ wl_1(y) w_1(y_1)  $$        | |
+| $$ c_1    $$ q | $$ ul_1 c_1 $$                 | now $$ t_2 $$ may proceed |
+| $$ w_2(x) $$ q | $$ wl_2(x) w_2(x_2)  $$        | |
+| $$ w_2(z) $$ q | $$ wl_2(z) w_2(z_2)  $$        | |
+| $$ r_2(y) $$   | $$ rl_2(y) r_2(y_0)  $$        | |
+| $$ c_2    $$   | $$ ul_2 c_2 $$                 | |
+
+Result is:
+
+$$
+m = w_0(x_0) w_0(y_0) c_0 r_1(x_0) r_2(x_0) r_3(y_0) w_3(z_3) r_3(x_0) c_3 w_1(y_1) c_1 w_2(x_2) w_2(z_2) r_2(y_0) c_2
+$$
+
+ROMV guarantees at least MVSR but we were lucky enough to get $$ m \in MCSR $$ and all transactions committed:
+
+$$
+m = w_0(x_0) w_0(y_0) c_0 [ r_1(x_0) r_2(x_0) ] r_3(y_0) w_3(z_3) r_3(x_0) c_3 w_1(y_1) c_1 w_2(x_2) w_2(z_2) r_2(y_0) c_2 \\
+commute \\
+= w_0(x_0) w_0(y_0) c_0 r_3(y_0) w_3(z_3) r_3(x_0) c_3 [ r_1(x_0) r_2(x_0) ] w_1(y_1) c_1 w_2(x_2) w_2(z_2) r_2(y_0) c_2 \\
+commute \\
+= w_0(x_0) w_0(y_0) c_0 r_3(y_0) w_3(z_3) r_3(x_0) c_3 r_1(x_0) w_1(y_1) c_1 [ r_2(x_0) ] w_2(x_2) w_2(z_2) r_2(y_0) c_2 \\
+\Rightarrow
+m \approx_c m' = t_0 t_3 t_1 t_2
+$$
+
+MVSGT
+---
+
+I will left it for the home work.
+
+MVSGT is similar to SGT and tracks MV conflict graph in real time to
+ensure serializability. MVSGT produces MCSR schedules.
 
 Anomalies in SI
 ---
