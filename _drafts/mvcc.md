@@ -10,7 +10,7 @@ desc: A story about MVCC - what are multi-version histories and how mv-scheduler
 Multi-version histories
 ---
 
-In conventional histories in any point in time there exists only one version of a variable.
+In conventional histories at any point in time there exists only one version of a variable.
 That means that the _write_ operations always rewrite previous version and the _read_ operations
 always read the latest written version as it is defined by the schedule semantics:
 
@@ -545,14 +545,73 @@ ensure serializability. MVSGT produces MCSR schedules.
 Anomalies in SI
 ---
 
+Snapshot isolation (SI) uses items versions to provide consistent view (reads) of
+a database state (snapshot) in some point in time. Thus it requires MVCC. The thing is
+the resulting histories are not necessarily serializable. As far as MVCC is a way to
+implement Snapshot Isolation (SI), let's take a look at what anomalies
+does SI exposes.
+
+For the details about what exactly SI is let's turn to the work [[6]]:
+
+1. A transaction $$ t_i $$ executing under SI conceptually reads data
+   from the committed state of the database as of time $$ start(t_i) $$ (the
+   snapshot). So it exploit reads as in ROMV for read-only transactions.
+
+2. Snapshot Isolation must obey a "First Committer Wins" rule:
+   the transaction may be committed only if there are no other
+   transactions $$ t_j $$ that wrote data items that $$ t_i $$
+   wrote. It must be aborted otherwise.
+
+Before [[6]] it was widely assumed that, under SI, read-only transactions
+always execute serializably provided the concurrent update transactions
+are serializable. They refuted it by showing presence of the Read Skew under SI.
+Possibility of the Write Skew was known before.
+
+At this point, I would like to quote a definition of the SI by work [[5]]:
+
+A system provides Snapshot Isolation if it prevents phenomena G0, G1a, G1b,
+G1c, PMP, OTV, and Lost Updates.
+
+What we are left with are: G-single (read skew), G2-item (write skew),
+G2 (write skew on predicates).
+
+So how actually read and write skew looks like?
+
+Write skew
+---
+
+$$ m = w_0(x_0) w_0(y_0) c_0 r_1(x_0) r_2(x_0) r_1(y_0) r_2(y_0) w_1(x_1) c_1 w_2(y_2) c_2 $$
+
+that can break $$ f(x, y) $$ invariant.
+
+Read skew
+---
+
+In read skew one of the transactions is read-only and it turns out the serializable
+schedule into non-serializable:
+
+$$ m = w_0(x_0) w_0(y_0) c_0 r_2(x_0) r_2(y_0) r_1(y_0) w_1(y_1) c_1 r_3(x_0) r_3(y_1) c_3 w_2(x_2) c_2 $$
+
+SSI
+---
+
+In 2012 it was shown how SI may be implemented to produce only serializable
+schedules. It's called SSI [[7]].
+
 ## References
 
 - [Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition][1].
 - [Managing Information Technology Resources in Organizations in the Next Millennium: 1999 Information Resources Management Association International Conference, Hershey, PA, USA, May 16-19, 1999][2].
 - [Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985][3].
 - [Information Systems Security: Third International Conference, ICISS 2007, Delhi, India, December 16-20, 2007, Proceedings][4].
+- [Scalable Atomic Visibility with RAMP Transactions, Peter Bailis, Alan Fekete, Ali Ghodsi, Joseph M. Hellerstein, and Ion Stoica, 2016][5].
+- [A Read-Only Transaction Anomaly Under Snapshot Isolation, By Alan Fekete, Elizabeth O'Neil, and Patrick O'Neil, 2004][6].
+- [Serializable Snapshot Isolation in PostgreSQL, Dan R. K. Ports, Kevin Grittner, 2012][7].
 
 [1]: https://www.amazon.com/Transactional-Information-Systems-Algorithms-Concurrency/dp/1558605088 "Transactional Information Systems: Theory, Algorithms, and the Practice of Concurrency Control and Recovery (The Morgan Kaufmann Series in Data Management Systems) 1st Edition by Gerhard Weikum, Gottfried Vossen, Morgan Kaufmann; 1 edition (June 4, 2001)"
 [2]: https://books.google.ru/books?id=pLIXL0fA_j8C
 [3]: https://www.sciencedirect.com/science/article/pii/002200008690022X "Algorithmic aspects of multiversion concurrency control by Thanasis Hadzilacos, Christos Harilaos Papadimitriou, march 1985"
 [4]: https://books.google.ru/books?id=lNdrCQAAQBAJ
+[5]: http://www.bailis.org/papers/ramp-tods2016.pdf
+[6]: https://www.cs.umb.edu/~poneil/ROAnom.pdf
+[7]: http://vldb.org/pvldb/vol5/p1850_danrkports_vldb2012.pdf
