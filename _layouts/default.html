@@ -11,11 +11,6 @@
       <div class="masthead">
         <div class="container">
           <h3 class="masthead-title">
-            {% if page.url == "/" %}
-              <a href="/about/" title="@john.koepi - about">{{ site.title }}</a>
-            {% else %}
-              <a href="/" title="@john.koepi - home">{{ site.title }}</a>
-            {% endif %}
             <a href="mailto: john.koepi at gmail dot com" title="email" class="svg-icon grey">@</a>
             <a href="https://github.com/sitano" title="github">
               <svg class="svg-icon grey">
@@ -33,6 +28,11 @@
               </svg>
             </a>
             <a href="https://gist.github.com/sitano" title="gist" class="svg-icon grey">g</a>
+            {% if page.url == "/" %}
+              <a href="/about/" title="@john.koepi - about">Ivan Prisyazhnyy</a>
+            {% else %}
+              <a href="/" title="@john.koepi - home">Ivan Prisyazhnyy</a>
+            {% endif %}
             <small>{{ site.tagline }}</small>
           </h3>
         </div>
