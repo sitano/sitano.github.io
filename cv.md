@@ -1,71 +1,68 @@
 # Ivan Prisyazhnyy
 
-- john.XXXXX@gmail.com
-- +7XXXXXXXXX
+- https://www.linkedin.com/in/prisyaznyy/
+- https://twitter.com/JohnKoepi
+- https://github.com/sitano
+- http://sitano.github.io/
 
 ## SUMMARY
 
-Software engineer interested in Distributed Systems, System Programming, and
-Databases. I build systems that run on Linux or in a cloud with Open Source.
-I love learning programming languages, architectures, and reading white papers.
-
-For the last ten years, I've built a social network, a blockchain, an instant messaging,
-an MMO game, and infrastructure with the diverse range of languages and technologies.
+I am looking for an opportunity to develop a distributed system related project
+that will benefit from my knowledge, expertise, and experience.
 
 ## PROFESSIONAL EXPERIENCE
 
-### Team Lead, Software Engineer at Startup
+### Software Engineer at ScyllaDB Inc.
 
-Mar 2017 - Present  
-_Social Network, NDA_ (Go, GCP)
+Oct 2019 - Present
+SaaS, Cloud Team (Go, Python, Bash, Java, C++)
+
+ScyllaDB Cloud - database as a service. Go + AWS.
+
+- I have automated cluster management operations.
+- I have contributed a few patches to the core: Seastar clang compatibility, ScyllaDB REST API improvements, CMake configuration fixes
+- I have developed a few tools to improve team processes: local GitHub merge queue management tool, Golang linters 
+
+### Principal Software Engineer at Startup
+
+Mar 2017 - September 2019
+Social Network, Core Team (Go, GCP)
 
 I was responsible for creating a platform for social network.
 
-Accomplishments:
+Social Network backend, infrastructure services, and architecture.
+Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
 
-- I have created platform core which now grown to hundreds of services running in production,
-- I have built semi-private blockchain system that can scale horizontally (improved btc&eth architecture),
-- I have built modern instant messaging system (like telegram),
-- I have built baseline infrastructure library for microservices, founded coding standards,
-- I have led migration from AWS to the Google Cloud Platform,
+- I created a system that has grown to hundreds of services running in production,
+- I have built private blockchain system that can scale horizontally (mixed btc&eth architecture),
+- I have built a modern instant messaging system (like telegram),
+- I have built a baseline infrastructure library for microservices, founded coding standards,
+- I have led the migration from AWS to the Google Cloud Platform,
 - I interviewed people and helped others to learn concurrency,
 - I have managed teams in order to get these projects done.
-
-Responsibilities:
-
-- Create hard things,
-- Assisting teams and processes,
-- Code quality and development culture management.
-
-Technology stack:
-
-- GoLang, gRPC, Google Cloud Platform, Spanner,
-  Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
+- I have created and managed a development culture.
 
 ### Site Reliability Engineer at Exit Games
 
-November 2014 - April 2017  
-_Cloud Infrastructure_ (Go, PS, C#)
+Cloud Infrastructure (Go, PS, C#)
+November 2014 - April 2017
 
-I was building systems for cloud infrastructure and operation,s
-troubleshooting and improving systems reliability.
 
-Accomplishments:
+Cloud Infrastructure and Operations development and support, troubleshooting.
+Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant.
 
-- I've built a multi-datacenter fault-tolerant cluster monitoring
-  system atop deployed Consul infrastructure with a nice Dashboards
-  overviewing clusters overall state, SQL interface to every piece of
-  data and integration with our 24x7 services like Stackify, PagerDuty,
-  VictorOps and etc. (with ideas came from Facebook`s OSQuery,
-  InfluxDB, Vector Clocks, CRDTs and ZooKeeper LE)
+- I've built a multi-datacenter fault-tolerant cluster monitoring system atop
+  deployed Consul infrastructure with a nice Dashboards overviewing clusters
+  overall state, SQL interface to every piece of data and integration with our
+  24x7 services like Stackify, PagerDuty, VictorOps and etc.
+  (with ideas came from Facebook`s OSQuery, InfluxDB, Vector Clocks, CRDTs,
+  and ZooKeeper LE)
 - Built distributed execution framework in PowerShell (WinRT) capable of
   updating hundreds of the windows servers at the same time and automated
   all deployment procedures
 - Wrote Microsoft Azure Storage services Go client
 - Built distributed passive synchronization of user plugins
 - Hack around Consul, Vault, Nomad, InfluxDB
-
-Technologies: Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant
 
 ### pet projects
 
@@ -80,14 +77,11 @@ Go, C++, JS
 
 ### Team Lead, Software Engineer at Neodinamika
 
-August 2009 - September 2014 (5 years 2 months)  
-_MusicWars MMO_ (Java, Node.JS, Scala)
+August 2009 - September 2014 (5 years 2 months)
+MusicWars MMO (Java, Node.JS, Scala)
 
-I've built MMO browser game backend system (MusicWars: http://musicwars.ru);
-I was in charge of all backend specific parts like architecture, development,
-scalability, reliability, optimization, and configuration.
-
-Accomplishments:
+MMO browser game backend system (MusicWars: http://musicwars.ru)
+I was in charge of all backend-specific parts like architecture, development, scalability, reliability, optimization, and configuration.
 
 - created and ran scalable game platform
 - servers setup (aws and bare metal)
@@ -101,13 +95,13 @@ Accomplishments:
 - wrote a lot of bash, ruby, python scripts to automate things for our dev env
 - did static code analysis and heap memory dump analysis to improve our memory footprint
 
-Technologies: Linux, Java, Node.JS, Scala, Bash, Puppet, Thrift, Scribe,
-Finagle, Netty, Redis, Memcached, Mysql, MongoDB, Sphinx (Lucene replaced),
-Ehcache, Hibernate, Eclipse JDT, Vagrant, Puppet, Ruby, Python, SBT, Maven, Ant.
+Technologies: Linux, Java, Node.JS, Scala, Bash, Puppet, Thrift, Scribe, Finagle, Netty, Redis,
+              Memcached, Mysql, MongoDB, Sphinx (Lucene replaced), Ehcache, Hibernate, Eclipse JDT,
+              Vagrant, Puppet, Ruby, Python, SBT, Maven, Ant.
 
 ### Outsourcing for AcushNet Company
 
-2008 - August 2009  
+2008 - August 2009
 _web portal_, C#
 
 Developing a version of MyTPI website with the best practices and popular
@@ -119,7 +113,7 @@ Practices, Microsoft Enterprise Library.
 
 ### Software Engineer at Bitrix
 
-2007 - 2008  
+2007 - 2008
 PHP
 
 - Developing brand new BITRIX.NET CMS solution. C# ASP.NET.
@@ -128,7 +122,7 @@ PHP
 
 ### Software Engineer at HeroCraft
 
-2006 - 2007  
+2006 - 2007
 C++
 
 - port of java MIDP 1.0 to Windows CE
@@ -136,7 +130,7 @@ C++
 
 ### Software Engineer at Tenax
 
-2005 - 2006  
+2005 - 2006
 C#
 
 ASP.NET, geospatial service for government
@@ -170,8 +164,10 @@ Master's degree (5 years), Computational and Applied Mathematics, 2002 - 2011
 
 ## CONTACTS
 
-Ivan Prisyazhnyy (Иван Присяжный),  
+Ivan Prisyazhnyy (Иван Присяжный),
 Software Engineer,
 
-+7XXXXXXXXX  
-john.XXXXX@gmail.com
+https://www.linkedin.com/in/prisyaznyy/
+https://twitter.com/JohnKoepi
+https://github.com/sitano
+http://sitano.github.io/
