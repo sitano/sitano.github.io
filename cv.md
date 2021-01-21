@@ -7,8 +7,8 @@
 
 ## SUMMARY
 
-I am looking for an opportunity to develop a distributed system related project
-that will benefit from my knowledge, expertise, and experience.
+I want to help companies create great products and
+make the world a better place.
 
 ## PROFESSIONAL EXPERIENCE
 
@@ -18,17 +18,17 @@ Oct 2019 - Present
 SaaS, Cloud Team (Go, Python, Bash, Java, C++)
 
 ScyllaDB Cloud - database as a service. Go + AWS.
+Developer Advocacy.
 
-- I have automated cluster management operations.
-- I have contributed a few patches to the core: Seastar clang compatibility, ScyllaDB REST API improvements, CMake configuration fixes
-- I have developed a few tools to improve team processes: local GitHub merge queue management tool, Golang linters 
+- Cluster management automation, tooling improvement.
+- Benchmarks, open-source contributions, databases research, writing
 
 ### Principal Software Engineer at Startup
 
 Mar 2017 - September 2019
 Social Network, Core Team (Go, GCP)
 
-I was responsible for creating a platform for social network.
+I have created a platform for a social network and whole its infrastructure.
 
 Social Network backend, infrastructure services, and architecture.
 Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
@@ -46,7 +46,6 @@ Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis,
 
 Cloud Infrastructure (Go, PS, C#)
 November 2014 - April 2017
-
 
 Cloud Infrastructure and Operations development and support, troubleshooting.
 Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant.
