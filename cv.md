@@ -15,13 +15,11 @@ make the world a better place.
 ### Software Engineer at ScyllaDB Inc.
 
 Oct 2019 - Present
-SaaS, Cloud Team (Go, Python, Bash, Java, C++)
+Field Engineering (C++, Go, Python, Bash, Java)
 
-ScyllaDB Cloud - database as a service. Go + AWS.
-Developer Advocacy.
-
+- Field Engineering, writing patches and tools.
+- Benchmarks, open-source contributions, databases research, writing articles.
 - Cluster management automation, tooling improvement.
-- Benchmarks, open-source contributions, databases research, writing
 
 ### Principal Software Engineer at Startup
 
