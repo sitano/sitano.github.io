@@ -7,21 +7,33 @@
 
 ## SUMMARY
 
-I want to help companies create great products and
-make the world a better place.
+I help companies to build great products and
+make the world a safer place by building and optimizing
+distributed systems.
 
 ## PROFESSIONAL EXPERIENCE
 
+### Senior Infrastructure Engineer at Workato
+
+June 2021 - Present
+Senior Infrastructure Engineer (C/C++, Go, Java, Ruby, Python, ...)
+
+- Creation of the systems and tools to support, optimize and maintain existing infrastructure and a product.
+- Research projects.
+- Infrastructure optimization. Kubernetes and containers related. Ruby VM hacking.
+- Debugging production issues: ooms, deadlocks, stalls, kernel, ...
+
 ### Software Engineer at ScyllaDB Inc.
 
-Oct 2019 - Present
+Oct 2019 - May 2021
 Field Engineering (C++, Go, Python, Bash, Java)
+and Cloud Team (DBaaS) (Go).
 
 - Field Engineering, writing patches and tools.
 - Benchmarks, open-source contributions, databases research, writing articles.
 - Cluster management automation, tooling improvement.
 
-### Principal Software Engineer at Startup
+### Principal Software Engineer at Nimses
 
 Mar 2017 - September 2019
 Social Network, Core Team (Go, GCP)
@@ -32,13 +44,13 @@ Social Network backend, infrastructure services, and architecture.
 Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
 
 - I created a system that has grown to hundreds of services running in production,
-- I have built private blockchain system that can scale horizontally (mixed btc&eth architecture),
-- I have built a modern instant messaging system (like telegram),
-- I have built a baseline infrastructure library for microservices, founded coding standards,
-- I have led the migration from AWS to the Google Cloud Platform,
+- I built private blockchain system that can scale horizontally (mixed btc&eth architecture),
+- I built a modern instant messaging system (like telegram),
+- I built a baseline infrastructure library for microservices, founded coding standards,
+- I led the migration from AWS to the Google Cloud Platform,
 - I interviewed people and helped others to learn concurrency,
-- I have managed teams in order to get these projects done.
-- I have created and managed a development culture.
+- I managed teams in order to get those projects done.
+- I created and managed a development culture.
 
 ### Site Reliability Engineer at Exit Games
 
@@ -151,7 +163,8 @@ Administrating FreeBSD, satellite channels, squid, shaping, apache
 
 Immanuel Kant Baltic Federal University (http://eng.kantiana.ru/)
 
-Master's degree (5 years), Computational and Applied Mathematics, 2002 - 2011
+Specialist degree (like a Bachelor but 5 years),
+Computational and Applied Mathematics, 2002 - 2011
 
 ## CERTIFICATIONS
 
