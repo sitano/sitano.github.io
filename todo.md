@@ -19,6 +19,11 @@ title: To write
 - solve CMU DB impl https://github.com/cmu-db/bustub
 - solve TiDB Training Plan
 - write 3D software renderer, raytracer, raymarcher
+- read ClickHouse source code
+- learn https://en.algorithmica.org/hpc/
+- read https://rakyll.org/ blog
+- read FAST, PaPoC, NEXT papers
+- read https://medium.com/google-cloud/spanners-sql-story-79bda8bb632d
 
 ## Questions
 
