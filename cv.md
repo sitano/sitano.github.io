@@ -7,46 +7,47 @@
 
 ## SUMMARY
 
-I help companies to build great products and
-make the world a safer place by building and optimizing
-distributed systems.
+I help companies build products and make the world a safer place by building
+and optimizing distributed systems.
 
 ## PROFESSIONAL EXPERIENCE
 
-### Senior Infrastructure Engineer at Workato
+### Senior Software Engineer at Workato
 
 June 2021 - Present
-Senior Infrastructure Engineer (C/C++, Go, Java, Ruby, Python, ...)
+Senior Software Engineer (C/C++, Go, Rust, Ruby, Python)
 
-- Creation of the systems and tools to support, optimize and maintain existing infrastructure and a product.
-- Research projects.
-- Infrastructure optimization. Kubernetes and containers related. Ruby VM hacking.
-- Debugging production issues: ooms, deadlocks, stalls, kernel, ...
+R&D Infrastructure department. I research opportunities and develop systems to
+implement non-trivial performance and security optimizations across the stack.
+C/C++, Rust, Go, Ruby.
+
+- containers (lxc, containerd), isolation (lxc), linux, kubernetes
+- performance
+- observability
+- hacking around Ruby VM internals
+- debugging: OOMs, deadlocks, stalls, kernel, ...
 
 ### Software Engineer at ScyllaDB Inc.
 
 Oct 2019 - May 2021
-Field Engineering (C++, Go, Python, Bash, Java)
-and Cloud Team (DBaaS) (Go).
+Field Engineering (C++, Go, Python, Bash, Java) and DBaaS (Cloud/Go).
 
-- Field Engineering, writing patches and tools.
-- Benchmarks, open-source contributions, databases research, writing articles.
-- Cluster management automation, tooling improvement.
+- Field Engineering (c++/go/python), patches and tools.
+- DBaaS developer (go)
+- benchmarks, open-source contributions, databases research, writing articles.
 
 ### Principal Software Engineer at Nimses
 
 Mar 2017 - September 2019
 Social Network, Core Team (Go, GCP)
 
-I have created a platform for a social network and whole its infrastructure.
-
-Social Network backend, infrastructure services, and architecture.
+Lead developer at Social Network. Backend.
 Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
 
 - I created a system that has grown to hundreds of services running in production,
 - I built private blockchain system that can scale horizontally (mixed btc&eth architecture),
 - I built a modern instant messaging system (like telegram),
-- I built a baseline infrastructure library for microservices, founded coding standards,
+- I built a baseline library for microservices, founded coding standards,
 - I led the migration from AWS to the Google Cloud Platform,
 - I interviewed people and helped others to learn concurrency,
 - I managed teams in order to get those projects done.
@@ -89,8 +90,9 @@ Go, C++, JS
 August 2009 - September 2014 (5 years 2 months)
 MusicWars MMO (Java, Node.JS, Scala)
 
-MMO browser game backend system (MusicWars: http://musicwars.ru)
-I was in charge of all backend-specific parts like architecture, development, scalability, reliability, optimization, and configuration.
+MMO browser game (MusicWars: http://musicwars.ru)
+I was in charge of all backend-specific parts like architecture, development,
+scalability, reliability, optimization, and configuration.
 
 - created and ran scalable game platform
 - servers setup (aws and bare metal)
