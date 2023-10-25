@@ -7,8 +7,11 @@
 
 ## SUMMARY
 
-I help companies build products and make the world a safer place by building
-and optimizing distributed systems.
+Software Engineer (SWE).
+
+I build systems that run on Linux in the cloud with Open Source. Distributed
+Systems, System Programming, and Databases. Go, Rust, C/C++, Java, and whatever
+it takes.
 
 ## PROFESSIONAL EXPERIENCE
 
@@ -17,41 +20,93 @@ and optimizing distributed systems.
 June 2021 - Present
 Senior Software Engineer (C/C++, Go, Rust, Ruby, Python)
 
-R&D Infrastructure department. I research opportunities and develop systems to
-implement non-trivial performance and security optimizations across the stack.
-C/C++, Rust, Go, Ruby.
+R&D: I have been developing optimizations, systems, and research projects for
+our infrastructure platform to drive performance and security enhancements
+across the stack. Linux Kernel, Linux Containers, C/C++, Rust, Go, and Ruby.
 
-- containers (lxc, containerd), isolation (lxc), linux, kubernetes
-- performance
-- observability
-- hacking around Ruby VM internals
-- debugging: OOMs, deadlocks, stalls, kernel, ...
+Achievements:
+
+- Developed in-house distributed serverless compute platform think AWS Lambda
+  or Google Function or something similar to what Fly.io is doing.
+- Optimized sandboxes spawn speed. I saved more than x2 in wall clock time,
+  -30% of total production CPU usage, and -100GBs of total cluster RAM usage.
+- Developed rootless containers teleportation technology for the old Ruby VM.
+- Wrote a couple of native (C/C++) add-ons to different VMs (Ruby and Node.js).
+- Developed in-house Linux containerization.
+- Developed Kubernetes network traffic monitoring system.
+
+Responsibilities:
+
+- Containerization (lxc, containerd/libcontainer, gvisor, wasm internals) and
+  isolation, Kubernetes (internals), Linux (debugging) development and
+  derivatives
+- Performance optimizations (research, patching)
+- Observability (research, development)
+- Ruby VM internals (research, patching)
+- Debugging various production issues, including OOMs, deadlocks, stalls, and
+  Linux kernel-related problems.
+
+Skills: Linux · Distributed Systems · Rust (Programming Language) · C
 
 ### Software Engineer at ScyllaDB Inc.
 
 Oct 2019 - May 2021
 Field Engineering (C++, Go, Python, Bash, Java) and DBaaS (Cloud/Go).
 
-- Field Engineering (c++/go/python), patches and tools.
-- DBaaS developer (go)
-- benchmarks, open-source contributions, databases research, writing articles.
+- Field Engineering: Leveraged expertise in C++, Go, and Python to conduct
+  production-level customer-faced investigations and contribute to ScyllaDB,
+  including the creation of patches (tracing optimizations) and tools (ansible
+  plugins) for enhancing functionality and performance.
+- DBaaS Development: Was part of the Database-as-a-Service (DBaaS) team using
+  Go, providing scalable and efficient database management capabilities.
+- Benchmarks and Open-Source Contributions: Actively participated in OSS
+  benchmarking activities, evaluating the performance and efficiency of
+  ScyllaDB. Made contributions (ie YCSB) to open-source projects, sharing
+  knowledge and insights with the software development community.
+- DevRel-ed a bit: Authored a few articles on databases and ScyllaDB
+  performance.
+
+Bonus:
+- We won in-house hackathon with our team by developing S3 binary-compatible
+  frontend for ScyllaDB
+
+Skills: Linux · Distributed Systems · Go/Java/C++ · Databases
 
 ### Principal Software Engineer at Nimses
 
 Mar 2017 - September 2019
-Social Network, Core Team (Go, GCP)
+Principal Software Engineer | Social Network | Go, gRPC, GCP, Spanner,
+Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka
 
-Lead developer at Social Network. Backend.
-Go, gRPC, GCP, Spanner, Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka.
+Key Accomplishments:
 
-- I created a system that has grown to hundreds of services running in production,
-- I built private blockchain system that can scale horizontally (mixed btc&eth architecture),
-- I built a modern instant messaging system (like telegram),
-- I built a baseline library for microservices, founded coding standards,
-- I led the migration from AWS to the Google Cloud Platform,
-- I interviewed people and helped others to learn concurrency,
-- I managed teams in order to get those projects done.
-- I created and managed a development culture.
+- Successfully created and managed a system comprising hundreds of services
+  running in production.
+- Developed a private scalable blockchain.
+- Started a modern instant messaging system, similar to Telegram, offering
+  seamless communication experiences.
+- Established a baseline library for microservices and implemented coding
+  standards for improved development efficiency.
+- Led the migration from AWS to the Google Cloud Platform, ensuring smooth
+  transition and optimized cloud infrastructure.
+- Conducted interviews and provided guidance to team members, fostering
+  learning and growth in concurrent programming.
+- Effectively managed teams to deliver projects on time and to high standards.
+- Created and nurtured a development culture that emphasized innovation,
+  collaboration, and code quality.
+
+Responsibilities:
+
+- Tackling challenging technical problems and implementing robust solutions.
+- Assisting teams and streamlining processes for improved efficiency and
+  productivity.
+- Ensuring code quality and promoting a strong development culture within the
+  organization.
+
+Technology Stack:
+
+Go, gRPC, Google Cloud Platform (GCP), Spanner, Datastore, PubSub, Kubernetes,
+AWS/RDS/PostgreSQL/Redis, Kafka
 
 ### Site Reliability Engineer at Exit Games
 
@@ -61,29 +116,18 @@ November 2014 - April 2017
 Cloud Infrastructure and Operations development and support, troubleshooting.
 Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant.
 
-- I've built a multi-datacenter fault-tolerant cluster monitoring system atop
-  deployed Consul infrastructure with a nice Dashboards overviewing clusters
-  overall state, SQL interface to every piece of data and integration with our
-  24x7 services like Stackify, PagerDuty, VictorOps and etc.
-  (with ideas came from Facebook`s OSQuery, InfluxDB, Vector Clocks, CRDTs,
-  and ZooKeeper LE)
-- Built distributed execution framework in PowerShell (WinRT) capable of
-  updating hundreds of the windows servers at the same time and automated
-  all deployment procedures
-- Wrote Microsoft Azure Storage services Go client
+- Developed a fault-tolerant cluster monitoring system across multiple data
+  centers, on top of our Consul infrastructure. Implemented a monitoring system
+  to provide comprehensive overviews of cluster states, integrating with
+  Stackify, PagerDuty, VictorOps, and other 24x7 services. Inspired by
+  Facebook's OSQuery, InfluxDB, Vector Clocks, CRDTs, and ZooKeeper LE.
+- Created a distributed execution framework in PowerShell (WinRT) capable of
+  simultaneously updating hundreds of Windows servers. Automated deployment
+  procedures for streamlined and efficient processes.
+- Built a Go client for Microsoft Azure Storage services.
 - Built distributed passive synchronization of user plugins
-- Hack around Consul, Vault, Nomad, InfluxDB
-
-### pet projects
-
-Go, C++, JS
-
-- slither.io reverse engineering, full protocol reversing, game algorithms, debug tools
-- slither.io c++ game server implementation (https://github.com/sitano/slitherss),
-  boost.asio, websocketpp
-- golang internals research, goroutines internal parking api (gsysint) made
-  public, some internal structs to play with exposed
-- research of golang internal channel impl.
+- Engaged in extensive research and usage of Consul, Vault, Nomad, and
+  InfluxDB.
 
 ### Team Lead, Software Engineer at Neodinamika
 
@@ -99,80 +143,38 @@ scalability, reliability, optimization, and configuration.
 - patched javassist, hibernate, memcached, mysql, redis drivers and scribed.
 - created development environment with puppet / vagrant
 - created automated deployment system based on fpm, prm
-- integrated our game platform with publisher's services (service set cluster on node.js)
+- integrated our game platform with publisher's services (service set cluster
+  on node.js)
 - created DSL scripting language (antlr, eclipse java compiler)
-- solved a lot of performance issues on production site (with mysql, raid, redis, memcached, jvm, ...)
-- tuned jvm (gc too) a lot - I found PermGen memory leak based on invalid JIT configuration
+- solved a lot of performance issues on production site (with mysql, raid,
+  redis, memcached, jvm, ...)
+- tuned jvm (gc too) a lot - I found PermGen memory leak based on invalid JIT
+  configuration
 - wrote a lot of bash, ruby, python scripts to automate things for our dev env
-- did static code analysis and heap memory dump analysis to improve our memory footprint
+- did static code analysis and heap memory dump analysis to improve our memory
+  footprint
 
-Technologies: Linux, Java, Node.JS, Scala, Bash, Puppet, Thrift, Scribe, Finagle, Netty, Redis,
-              Memcached, Mysql, MongoDB, Sphinx (Lucene replaced), Ehcache, Hibernate, Eclipse JDT,
-              Vagrant, Puppet, Ruby, Python, SBT, Maven, Ant.
+Technologies: Linux, Java, Node.JS, Scala, Bash, Puppet, Thrift, Scribe,
+Finagle, Netty, Redis, Memcached, Mysql, MongoDB, Sphinx (Lucene replaced),
+Ehcache, Hibernate, Eclipse JDT, Vagrant, Puppet, Ruby, Python, SBT, Maven,
+Ant.
 
-### Outsourcing for AcushNet Company
+### Software Engineer in other companies
 
-2008 - August 2009
-_web portal_, C#
-
-Developing a version of MyTPI website with the best practices and popular
-at that time ASP.NET MVC.
-
-C# 3.5, ASP.NET MVC 1.0, NUnit, Moq, Microsoft SQL Server 2005,
-Entity Framework, Dynamic Linq, jQuery, Microsoft Best Patterns
-Practices, Microsoft Enterprise Library.
-
-### Software Engineer at Bitrix
-
-2007 - 2008
-PHP
-
-- Developing brand new BITRIX.NET CMS solution. C# ASP.NET.
-- Some stuff for Bitrix ads module, PHP.
-- WebServices module (SOAP/WSDL integration) for Bitrix, PHP.
-
-### Software Engineer at HeroCraft
-
-2006 - 2007
-C++
-
-- port of java MIDP 1.0 to Windows CE
-- C++-based runtime with custom translator
-
-### Software Engineer at Tenax
-
-2005 - 2006
-C#
-
-ASP.NET, geospatial service for government
-
-### Software Engineer, Outsourcing
-
-2003 - 2005
-
-Outsourcing web sites with PHP and JavaScript.
-Windows/MFC client-server billing system written in C ++
-to monitor time in game rooms. miranda icq protocol
-based email database scanner and spam bot.
-
-### Network Administrator at Local Russian Political Organisation
-
-2001 - 2003
-
-Administrating FreeBSD, satellite channels, squid, shaping, apache
+2003 - 2009
 
 ## EDUCATION
 
-Immanuel Kant Baltic Federal University (http://eng.kantiana.ru/)
+Immanuel Kant Baltic Federal University (https://kantiana.ru/).
 
 Specialist degree (like a Bachelor but 5 years),
 Computational and Applied Mathematics, 2002 - 2011
 
-## CERTIFICATIONS
+## BONUS
 
-- Functional Programming Principles in Scala (100%), Coursera, November 2012
-- Programming Languages by Dan Grossman (99.2%), Coursera, December 2013
-- Principles of Reactive Programming, Coursera, December 2013
+- Hydra conference Program Committee member (https://hydraconf.com/)
+- DistSys groups slack member (papers reading club)
+- Meetups talks
 
 ## CONTACTS
 
