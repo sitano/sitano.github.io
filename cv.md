@@ -7,32 +7,61 @@
 
 ## SUMMARY
 
-Software Engineer (SWE).
+_Software Engineer (SWE)._
 
-I build systems that run on Linux in the cloud with Open Source. Distributed
-Systems, System Programming, and Databases. Go, Rust, C/C++, Java, and whatever
-it takes.
+I build systems that run on Linux in the Cloud with Open Source.
+My focus is on Distributed Systems, System Programming, and Databases.
+With Rust, C/C++, Go, Java, and whatever it takes.
 
 ## PROFESSIONAL EXPERIENCE
 
-### Senior Software Engineer at Workato
+### Software Engineer in Rust Team at Workato
 
-June 2021 - Present
-Senior Software Engineer (C/C++, Go, Rust, Ruby, Python)
+_September 2023 - Present_
 
-R&D: I have been developing optimizations, systems, and research projects for
+Workato makes one of the best no-code automation platforms.
+
+Projects: internal database (Rust & MariaDB & AWS).
+          it is an internal product like Airtable or NocoDB.
+
+Areas:
+
+- BYOK (bring-your-own-key) data encryption at rest.
+- In-house database scalability.
+- Online cluster topology.
+- On-premise data cluster & controller.
+
+I have developed BYOK solution for data-at-rest encryption for in-house
+database including key management lifecycle and integration into existing
+ecosystem.
+
+I have built cluster controller that allowed to implement on-premise deployed
+data clusters with custom encryption plugins and data coordination.
+
+I have contributed to in-house database to ensure its support of horizontal
+scalability.
+
+I participated in incidents technical analysis. Especially database failures.
+
+### Software Engineer in Infrastructure R&D Team at Workato
+
+_June 2021 - September 2023 (Rust, Go, C/C++, Ruby)_
+
+Workato makes one of the best no-code automation platforms.
+
+I have been developing optimizations, systems, and research projects for
 our infrastructure platform to drive performance and security enhancements
-across the stack. Linux Kernel, Linux Containers, C/C++, Rust, Go, and Ruby.
+across the stack. (Linux Kernel, Linux Containers, C/C++, Rust, Go, and Ruby)
 
 Achievements:
 
-- Developed in-house distributed serverless compute platform think AWS Lambda
-  or Google Function or something similar to what Fly.io is doing.
-- Optimized sandboxes spawn speed. I saved more than x2 in wall clock time,
-  -30% of total production CPU usage, and -100GBs of total cluster RAM usage.
-- Developed rootless containers teleportation technology for the old Ruby VM.
-- Wrote a couple of native (C/C++) add-ons to different VMs (Ruby and Node.js).
-- Developed in-house Linux containerization.
+- Developed in-house distributed serverless compute platform like in-house AWS
+  Lambda or Google Function or something similar to what Fly.io is doing.
+- Optimized sandboxes bootstrap. I saved more than x2 in wall clock time,
+  -30% of total production CPU usage, and 100GBs of total cluster RAM usage.
+- Developed rootless containers teleportation technology for Ruby VM based on LXC.
+- Wrote a couple of native (C/C++) addons to different VMs (Ruby and Node.js).
+- Developed in-house Linux containerization system.
 - Developed Kubernetes network traffic monitoring system.
 
 Responsibilities:
@@ -46,37 +75,32 @@ Responsibilities:
 - Debugging various production issues, including OOMs, deadlocks, stalls, and
   Linux kernel-related problems.
 
-Skills: Linux · Distributed Systems · Rust (Programming Language) · C
+### Senior Software Engineer at ScyllaDB Inc.
 
-### Software Engineer at ScyllaDB Inc.
+_Oct 2019 - May 2021_
 
-Oct 2019 - May 2021
-Field Engineering (C++, Go, Python, Bash, Java) and DBaaS (Cloud/Go).
+ScyllaDB is a high-performance NoSQL database written in C++.
 
-- Field Engineering: Leveraged expertise in C++, Go, and Python to conduct
+Projects: DBaaS (Golang, AWS) and Field Engineering (C++, Go, Python, Bash, Java).
+
+- DBaaS Development: I was building Database-as-a-Service (DBaaS) as part of
+  the cloud team with Go.
+- Field Engineering: Leveraged expertise in C++, Java, Go, and Python to conduct
   production-level customer-faced investigations and contribute to ScyllaDB,
   including the creation of patches (tracing optimizations) and tools (ansible
   plugins) for enhancing functionality and performance.
-- DBaaS Development: Was part of the Database-as-a-Service (DBaaS) team using
-  Go, providing scalable and efficient database management capabilities.
 - Benchmarks and Open-Source Contributions: Actively participated in OSS
   benchmarking activities, evaluating the performance and efficiency of
   ScyllaDB. Made contributions (ie YCSB) to open-source projects, sharing
   knowledge and insights with the software development community.
-- DevRel-ed a bit: Authored a few articles on databases and ScyllaDB
-  performance.
-
-Bonus:
-- We won in-house hackathon with our team by developing S3 binary-compatible
-  frontend for ScyllaDB
-
-Skills: Linux · Distributed Systems · Go/Java/C++ · Databases
 
 ### Principal Software Engineer at Nimses
 
-Mar 2017 - September 2019
-Principal Software Engineer | Social Network | Go, gRPC, GCP, Spanner,
-Datastore, PubSub, Kubernetes, AWS/RDS/PostgreSQL/Redis, Kafka
+_Mar 2017 - September 2019_
+
+Nimses is a social network with blockchain capabilities.
+
+Projects: Backend and Blockchain.
 
 Key Accomplishments:
 
@@ -110,8 +134,11 @@ AWS/RDS/PostgreSQL/Redis, Kafka
 
 ### Site Reliability Engineer at Exit Games
 
-Cloud Infrastructure (Go, PS, C#)
-November 2014 - April 2017
+Exit Games makes most popular Unity networking framework/platform Photon.
+
+Project: Cloud Infrastructure (Golang, PowerShell, C#).
+
+_November 2014 - April 2017_
 
 Cloud Infrastructure and Operations development and support, troubleshooting.
 Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant.
@@ -131,37 +158,29 @@ Linux/Windows servers, Nginx/Lua, Ansible, CoreOS, Docker, Vagrant.
 
 ### Team Lead, Software Engineer at Neodinamika
 
-August 2009 - September 2014 (5 years 2 months)
-MusicWars MMO (Java, Node.JS, Scala)
+_August 2009 - September 2014 (5 years 2 months)_.
 
-MMO browser game (MusicWars: http://musicwars.ru)
-I was in charge of all backend-specific parts like architecture, development,
+Neodinamika builds multi-user online games (MMO).
+
+Project: MusicWars MMO: http://musicwars.ru (Java, Node.JS, Scala).
+
+I implemented and executed backend system for this game in Java. I was in
+charge of all backend-specific parts like architecture, development,
 scalability, reliability, optimization, and configuration.
 
-- created and ran scalable game platform
-- servers setup (aws and bare metal)
-- patched javassist, hibernate, memcached, mysql, redis drivers and scribed.
-- created development environment with puppet / vagrant
-- created automated deployment system based on fpm, prm
-- integrated our game platform with publisher's services (service set cluster
-  on node.js)
-- created DSL scripting language (antlr, eclipse java compiler)
-- solved a lot of performance issues on production site (with mysql, raid,
-  redis, memcached, jvm, ...)
-- tuned jvm (gc too) a lot - I found PermGen memory leak based on invalid JIT
-  configuration
-- wrote a lot of bash, ruby, python scripts to automate things for our dev env
-- did static code analysis and heap memory dump analysis to improve our memory
-  footprint
+Later I wrote a server for another project that was real-time MMO in C++.
+
+I made lots of OSS contributions to projects like javassist, hibernate,
+memcached, mysql, redis drivers and scribed.
 
 Technologies: Linux, Java, Node.JS, Scala, Bash, Puppet, Thrift, Scribe,
-Finagle, Netty, Redis, Memcached, Mysql, MongoDB, Sphinx (Lucene replaced),
+Finagle, Netty, Redis, Memcached, MySQL, MongoDB, Sphinx (Lucene replaced),
 Ehcache, Hibernate, Eclipse JDT, Vagrant, Puppet, Ruby, Python, SBT, Maven,
 Ant.
 
 ### Software Engineer in other companies
 
-2003 - 2009
+_2003 - 2009_
 
 ## EDUCATION
 
@@ -178,8 +197,8 @@ Computational and Applied Mathematics, 2002 - 2011
 
 ## CONTACTS
 
-Ivan Prisyazhnyy (Иван Присяжный),
-Software Engineer,
+Ivan Prisyazhnyy,
+Software Engineer.
 
 https://www.linkedin.com/in/prisyaznyy/
 https://twitter.com/JohnKoepi
