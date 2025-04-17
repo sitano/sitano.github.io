@@ -15,43 +15,31 @@ With Rust, C/C++, Go, Java, and whatever it takes.
 
 ## PROFESSIONAL EXPERIENCE
 
-### Software Engineer in Rust Team at Workato
+### Software Engineer at Workato
 
-_September 2023 - Present_
+_June 2021 - Present (Rust, Go, C/C++, Ruby)_
 
 Workato makes one of the best no-code automation platforms.
 
 Projects: internal database (Rust & MariaDB & AWS).
           it is an internal product like Airtable or NocoDB.
+          in-house Linux containers from scratch for alive Ruby processes.
+          live processes teleporation into LXC containers.
+          gVisor based system like in-house AWS Lambda.
 
 Areas:
 
 - BYOK (bring-your-own-key) data encryption at rest.
 - In-house database scalability.
-- Online cluster topology.
-- On-premise data cluster & controller.
-
-I have developed BYOK solution for data-at-rest encryption for in-house
-database including key management lifecycle and integration into existing
-ecosystem.
-
-I have built cluster controller that allowed to implement on-premise deployed
-data clusters with custom encryption plugins and data coordination.
-
-I have contributed to in-house database to ensure its support of horizontal
-scalability.
-
-I participated in incidents technical analysis. Especially database failures.
-
-### Software Engineer in Infrastructure R&D Team at Workato
-
-_June 2021 - September 2023 (Rust, Go, C/C++, Ruby)_
-
-Workato makes one of the best no-code automation platforms.
-
-I have been developing optimizations, systems, and research projects for
-our infrastructure platform to drive performance and security enhancements
-across the stack. (Linux Kernel, Linux Containers, C/C++, Rust, Go, and Ruby)
+- On-premise Galera+MariaDB based data shards.
+- Containerization (lxc, containerd/libcontainer, gvisor, wasm internals) and
+  isolation, Kubernetes (internals), Linux (debugging) development and
+  derivatives
+- Performance optimizations (research, patching)
+- Observability (research, development)
+- Ruby VM internals (research, patching)
+- Debugging various production issues, including OOMs, deadlocks, stalls, and
+  Linux kernel-related problems.
 
 Achievements:
 
@@ -63,17 +51,6 @@ Achievements:
 - Wrote a couple of native (C/C++) addons to different VMs (Ruby and Node.js).
 - Developed in-house Linux containerization system.
 - Developed Kubernetes network traffic monitoring system.
-
-Responsibilities:
-
-- Containerization (lxc, containerd/libcontainer, gvisor, wasm internals) and
-  isolation, Kubernetes (internals), Linux (debugging) development and
-  derivatives
-- Performance optimizations (research, patching)
-- Observability (research, development)
-- Ruby VM internals (research, patching)
-- Debugging various production issues, including OOMs, deadlocks, stalls, and
-  Linux kernel-related problems.
 
 ### Senior Software Engineer at ScyllaDB Inc.
 
@@ -100,7 +77,7 @@ _Mar 2017 - September 2019_
 
 Nimses is a social network with blockchain capabilities.
 
-Projects: Backend and Blockchain.
+Projects: Social network. Blockchain.
 
 Key Accomplishments:
 
