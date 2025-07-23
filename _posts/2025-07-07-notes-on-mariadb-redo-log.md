@@ -13,9 +13,10 @@ The database log (aka redo log) is used to ensure data integrity in the case of
 a crash or unexpected shutdown. It records changes made to the database before
 they are actually written (?) so that they can be replayed during recovery.
 Redo log is stored in `ib_logfileX` files. These files consist of the header
-(`START_OFFSET = FIRST_LSN = 12288`) and the ring buffer of the log items. The
-header starts with 512 bytes dedicated to the purposes of upgrading and
-preventing downgrading containing:
+(512 bytes and 2 LSN checkpoints overall up to `START_OFFSET = FIRST_LSN =
+12288` bytes) and the ring buffer of the log items. The header starts with 512
+bytes dedicated to the purposes of upgrading and preventing downgrading
+containing:
 
 ```
 +-------------------------------------------------------------------------------+
@@ -32,9 +33,9 @@ preventing downgrading containing:
 +-------------------------------------------------------------------------------+
 |                                 Redo Log Checkpoint Markers                   |
 +-------------------------------------------------------------------------------+
-| 0x1000   |   8    | Checkpoint #1                       | 1st checkpoint LSN  |
+| 0x1000   |   8    | Checkpoint LSN #1                   | 1st checkpoint LSN  |
 |----------|--------|-------------------------------------|---------------------|
-| 0x2000   |   8    | Checkpoint #2                       | 2nd checkpoint LSN  |
+| 0x2000   |   8    | Checkpoint LSN #2                   | 2nd checkpoint LSN  |
 +-------------------------------------------------------------------------------+
 |                                 Mini-Transactions Log                         |
 +-------------------------------------------------------------------------------+
@@ -42,10 +43,45 @@ preventing downgrading containing:
 +-------------------------------------------------------------------------------+
 ```
 
-Then the header has 2 important fixed locations of the checkpoint blocks: at
-the 1st and the 2nd LSN kilobytes (4096 and 8192 bytes) (log0log.h/log_t). More
-details at
+where Checkpoint LSN entries are used to indicate the coordinates of 2 latest
+checkpoint entries in the redo log. They consists of the FILE_CHECKPOINT record
+LSN, redo log end position LSN and a checksum:
+
+```
+Version 10.8 (0x5068_7973) and later.
+
++---------------------------------+
+|          Checkpoint LSN         |
++---------------------------------+
+| 0x0  | 8  | FILE_CHECKPOINT LSN |
++---------------------------------+
+| 0x8  | 8  | Redo Log End LSN    |
++---------------------------------+
+| 0x10 | 44 | Reserved            |
++---------------------------------+
+| 0x3C | 4  | CRC-32C Checksum    |
++---------------------------------+
+
+64 bytes total.
+```
+
+More details at
 [https://jira.mariadb.org/browse/MDEV-14425](https://jira.mariadb.org/browse/MDEV-14425).
+
+# LSN to Redo log physical position
+
+The redo log is a ring buffer with a header in front.
+
+The formula for calculating the physical position of a log sequence number (LSN)
+when it exceeds the header size is:
+
+```
+physical_position = START_OFFSET + (lsn - START_OFFSET) % RING_CAPACITY.
+
+where RING_CAPACITY = FILE_SIZE - START_OFFSET.
+
+START_OFFSET = fixed HEADER_SIZE.
+```
 
 # Log items or mini-transactions (mtr_t)
 
@@ -60,9 +96,9 @@ the record will contain more length.
 |   Mini-Transaction Record     |
 +-------------------------------+
 | First Byte                    |
-| - Bits 3..0: record length-1  |
-| - Bits 6..4: redo log type    |
 | - Bit  7: same page as prev f |
+| - Bits 6..4: redo log type    |
+| - Bits 3..0: payload len      |
 +-------------------------------+
 | Optional Length Bytes (0-3)   |
 | - Only present if len > 15    |
@@ -82,6 +118,8 @@ the record will contain more length.
 | Terminator Byte               |
 | - Either 0x00 or 0x01         |
 +-------------------------------+
+| CRC32C checksum               |
++-------------------------------+
 ```
 
 The examples of mini-transaction (mtr) record types are:
@@ -93,6 +131,13 @@ The examples of mini-transaction (mtr) record types are:
 - MEMSET (4): extends the 10.4 MLOG_MEMSET record
 - MEMMOVE (5): copy data within the page (avoids logging redundant data)
 - ...
+
+The termination byte may be 0x00 or 0x01 depending on the LSN wrap around
+generation. See `log_sys.get_sequence_bit()` for details:
+
+```
+!(((lsn - first_lsn) / capacity()) & 1)
+```
 
 Redo log record examples
 ===
@@ -258,7 +303,32 @@ Additionally, the invariants are checked at `recv_sys.validate_checkpoint()`.
 How FILE_CHECKPOINT record looks like in the log?
 ===
 
-TODO
+```
+Version 10.8 (0x5068_7973) and later.
+
++---------------------------------+
+|          Checkpoint LSN         |
++---------------------------------+
+| 0x0  | 8  | FILE_CHECKPOINT LSN |
++---------------------------------+
+| 0x8  | 8  | Redo Log End LSN    |
++---------------------------------+
+| 0x10 | 44 | Reserved            |
++---------------------------------+
+| 0x3C | 4  | CRC-32C Checksum    |
++---------------------------------+
+
+64 bytes total.
+```
+
+FILE_CHECKPOINT correctness rules for correct shutdown
+===
+
+1. The FILE_CHECKPOINT record must be the last record in the redo log.
+   Is is checked by verifying that the checkpoint LSN entries point to the
+   end of the redo log (end LSN and FILE_CHECKPOINT LSN).
+2. The FILE_CHECKPOINT LSN must be not less than any tablespace page
+   modification LSN.
 
 Where FILE_CHECKPOINT record is written?
 ===
@@ -266,6 +336,11 @@ Where FILE_CHECKPOINT record is written?
 TODO
 
 Undo log scan
+===
+
+TODO
+
+Wrap around and alignment
 ===
 
 TODO
