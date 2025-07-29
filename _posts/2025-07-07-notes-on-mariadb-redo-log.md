@@ -39,13 +39,14 @@ containing:
 +-------------------------------------------------------------------------------+
 |                                 Mini-Transactions Log                         |
 +-------------------------------------------------------------------------------+
-| 0x3000   | ...    | Log of Mini-Transactions            | Ring-Buffer of MTRs |
+| 0x3000   | ...    | Log of Mini-Transactions chains     | Ring-Buffer of MTRs |
 +-------------------------------------------------------------------------------+
 ```
 
 where Checkpoint LSN entries are used to indicate the coordinates of 2 latest
-checkpoint entries in the redo log. They consists of the FILE_CHECKPOINT record
-LSN, redo log end position LSN and a checksum:
+checkpoint entries in the redo log and known end of the log. Normally,
+checkpoint record consists of a single MTR with the FILE_CHECKPOINT op type,
+data LSN, redo log end position LSN and a checksum:
 
 ```
 Version 10.8 (0x5068_7973) and later.
@@ -83,17 +84,42 @@ where RING_CAPACITY = FILE_SIZE - START_OFFSET.
 START_OFFSET = fixed HEADER_SIZE.
 ```
 
-# Log items or mini-transactions (mtr_t)
+# Log items or mini-transactions (mtr_t) chains
 
-Redo log items are composed of the mini-transactions (`mtr_t` objects) that
-contain the information about changes made to the tablespaces. A
-mini-transaction is a stream of records. The first byte of the record would
-contain a record type, flags, and a part of length. The optional second byte of
-the record will contain more length.
+A mini-transaction (`mtr_t`) is a unit of work in the InnoDB storage. It
+represents a single data modification operation, such as an memset X bytes.
+
+```
+Mini-Transaction Record (mtr_t)
+
++-------+
+| mtr_t |
++-------+
+```
+
+An MTR chain is a sequence of mini-transactions that are grouped together to
+form a single logical operation. In MariaDB, it is rather the MTRs themselves
+are the stream of records, but for simplicity it makes sense to separate the
+concept into 2 different entities: MTR and MTR chain.
+
+```
+MTR Chain
+
++-------+-------+-------+-------+---+----------+
+| mtr_t | mtr_t | mtr_t | ..... |gen| checksum |
++-------+-------+-------+-------+---+----------+
+```
+
+Redo log items are composed of the mini-transactions (`mtr_t` objects) chains
+that contain the information about the changes made to the tablespaces or some
+special metadata. The first byte of the record of an MTR would contain a record
+type, flags, and a length if it is less than 16. Then it is usually a tablespace
+ID and page number, followed by the record payload, a termination byte if it is
+the last record in the chain, and a CRC32C checksum.
 
 ```
 +-------------------------------+
-|   Mini-Transaction Record     |
+|   Mini-Transaction Structure  |
 +-------------------------------+
 | First Byte                    |
 | - Bit  7: same page as prev f |
@@ -115,6 +141,8 @@ the record will contain more length.
 | Record Payload (Variable)     |
 | - Depends on redo log type    |
 +-------------------------------+
+| ... other MTR in the chain .. |
++-------------------------------+
 | Terminator Byte               |
 | - Either 0x00 or 0x01         |
 +-------------------------------+
@@ -122,7 +150,7 @@ the record will contain more length.
 +-------------------------------+
 ```
 
-The examples of mini-transaction (mtr) record types are:
+The examples of a mini-transaction (mtr) record types are:
 
 - FREE_PAGE (0): corresponds to MLOG_INIT_FREE_PAGE
 - INIT_PAGE (1): corresponds to MLOG_INIT_FILE_PAGE2
@@ -162,6 +190,26 @@ If log_sys.is_encrypted(), that is followed by 8 bytes of nonce
 (part of initialization vector). That will be followed by 4 bytes
 of CRC-32C of the entire mini-transaction, excluding the end byte.
 
+Redo log file checkpoint record
+===
+
+FILE_CHECKPOINT is a special type of mini-transaction record that marks the
+end of a checkpoint in the redo log. It is used to indicate that all changes
+up to that point have been successfully flushed to disk and that the database
+is in a consistent state. The FILE_CHECKPOINT record is written at the end of
+the checkpoint process, and it contains the log sequence number (LSN) of the
+checkpoint, the end LSN of the redo log, and a checksum to ensure data integrity.
+
+It has the following structure:
+
+```
+0xFA, // FILE_CHECKPOINT + len 10 bytes (+1 1st byte + 1 termination marker)
+0x00, 0x00, // tablespace id + page no (0x0000 for FILE_CHECKPOINT)
+0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, 0xXX, // 8 bytes checkpoint LSN
+0x0X, // termination marker
+0xXX, 0xXX, 0xXX, 0xXX, // checksum
+```
+
 Redo log file operations
 ===
 
@@ -174,6 +222,125 @@ have been successfully flushed to disk and that the database is in a consistent
 state. It's MTR size is defined as `SIZE_OF_FILE_CHECKPOINT` in `mtr0types.h` and
 is 16 bytes (3 bytes for type and page ID, 8 bytes for LSN, 1 byte for end
 byte, and 4 bytes).
+
+Example of MariaDB shutdown with `--innodb_fast_shutdown=0`
+===
+
+```
+Header block: 12288
+Size: 10485760, Capacity: 10473472
+RedoHeader {
+    version: 1349024115,
+    first_lsn: 12288,
+    creator: "MariaDB 11.6.2",
+    crc: 224651864,
+}
+RedoCheckpointCoordinate {
+    checkpoints: [
+        RedoHeaderCheckpoint {
+            checkpoint_lsn: 60024,
+            end_lsn: 60024,
+            checksum: 1691141185,
+        },
+        RedoHeaderCheckpoint {
+            checkpoint_lsn: 60123,
+            end_lsn: 60123,
+            checksum: 3550697051,
+        },
+    ],
+    checkpoint_lsn: Some(
+        60123,
+    ),
+    end_lsn: 60123,
+    encrypted: false,
+    version: 1349024115,
+    start_after_restore: false,
+}
+MTR Chain count=1, len=16, lsn=60123
+  1: Mtr { space_id: 0, page_no: 0, op: FileCheckpoint }
+Checkpoint LSN/1: RedoHeaderCheckpoint { checkpoint_lsn: 60024, end_lsn: 60024, checksum: 1691141185 }
+Checkpoint LSN/2: RedoHeaderCheckpoint { checkpoint_lsn: 60123, end_lsn: 60123, checksum: 3550697051 }
+File checkpoint chain: Some(MtrChain { lsn: 60123, len: 16, checksum: 3572919866, mtr: [Mtr { space_id: 0, page_no: 0, op: FileCheckpoint, file_checkpoint_lsn: Some(60123), marker: 1 }] })
+File checkpoint LSN: 60123
+```
+
+You can see that `checkpoint_lsn == end_lsn` and the FILE_CHECKPOINT record at
+position 60123 is the last record in the redo log - there is a termination
+marker after it and no valid MTRs.
+
+Example of MariaDB shutdown with `pkill -9`
+===
+
+```
+$ scripts/mariadb-install-db --datadir ./data --innodb-log-file-size=10M
+$ bin/mariadbd --datadir ./data --innodb_fast_shutdown=0 --innodb-log-file-size=10M
+
+$ mycli -S /tmp/mysql.sock
+> CREATE TABLE a (id int not null auto_increment primary key, t TEXT);
+> SET max_recursive_iterations = 1000000;
+> INSERT INTO a (t)
+  WITH RECURSIVE fill(n) AS (
+    SELECT 1 UNION ALL SELECT n + 1 FROM fill WHERE n < 60500
+  )
+  SELECT RPAD(CONCAT(FLOOR(RAND()*1000000)), 64, 'x') FROM fill;
+$ pkill -9 mariadbd
+$ cargo run -- --log-group-path data
+
+Header block: 12288
+Size: 10485760, Capacity: 10473472
+RedoHeader {
+    version: 1349024115,
+    first_lsn: 12288,
+    creator: "MariaDB 11.6.2",
+    crc: 224651864,
+}
+RedoCheckpointCoordinate {
+    checkpoints: [
+        RedoHeaderCheckpoint {
+            checkpoint_lsn: 6880644,
+            end_lsn: 9694174,
+            checksum: 1144991502,
+        },
+        RedoHeaderCheckpoint {
+            checkpoint_lsn: 9691474,
+            end_lsn: 10553265,
+            checksum: 2431378773,
+        },
+    ],
+    checkpoint_lsn: Some(
+        9691474,
+    ),
+    checkpoint_no: Some(
+        0,
+    ),
+    end_lsn: 10553265,
+    encrypted: false,
+    version: 1349024115,
+    start_after_restore: false,
+}
+MTR Chain count=4, len=27, lsn=9691474
+  1: Mtr { space_id: 8, page_no: 76, op: Memset }
+  2: Mtr { space_id: 8, page_no: 76, op: Write }
+  3: Mtr { space_id: 8, page_no: 76, op: Memset }
+  4: Mtr { space_id: 8, page_no: 76, op: Option }
+...
+MTR Chain count=13, len=89, lsn=11344877
+  1: Mtr { space_id: 3, page_no: 4, op: Write }
+  2: Mtr { space_id: 3, page_no: 4, op: Write }
+  ...
+  10: Mtr { space_id: 3, page_no: 2, op: Memset }
+  11: Mtr { space_id: 3, page_no: 4, op: Option }
+  12: Mtr { space_id: 3, page_no: 2, op: Option }
+  13: Mtr { space_id: 3, page_no: 0, op: Option }
+Checkpoint LSN/1: RedoHeaderCheckpoint { checkpoint_lsn: 6880644, end_lsn: 9694174, checksum: 1144991502 }
+Checkpoint LSN/2: RedoHeaderCheckpoint { checkpoint_lsn: 9691474, end_lsn: 10553265, checksum: 2431378773 }
+File checkpoint chain: Some(MtrChain { lsn: 10553265, len: 31, checksum: 2542014928, mtr: [Mtr { space_id: 8, page_no: 0, op: FileModify, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 0, page_no: 0, op: FileCheckpoint, file_checkpoint_lsn: Some(9691474), marker: 0 }, Mtr { space_id: 5411, page_no: 6, op: Option, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 252, page_no: 0, op: FreePage, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 252, page_no: 0, op: Extended, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 8, page_no: 252, op: Memset, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 8, page_no: 252, op: Write, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 8, page_no: 252, op: Memset, file_checkpoint_lsn: None, marker: 0 }, Mtr { space_id: 8, page_no: 252, op: Option, file_checkpoint_lsn: None, marker: 0 }] })
+File checkpoint LSN: 9691474
+WARNING: checkpoint LSN is not at the end of the log.
+```
+
+Here you can observe that there is an MTR chain at `9691474` and it is not a
+FILE_CHECKPOINT.
 
 Source refs
 ===
@@ -222,6 +389,10 @@ The boot process consists of several steps:
    and the changes are applied to the database.
 4. If the redo log is empty after the last checkpoint, it indicates that the
    database was shut down cleanly, and no recovery is needed.
+
+AFAIS, MariaDB checks the end of the log first for the records if checkpoint
+lsn != end_lsn, and only then goes to the scan of the log from the last
+checkpoint position.
 
 `storage/innobase/srv/srv0start.cc/srv_start()` is the initialization point for
 the InnoDB storage engine. First of all it calls `recv_recovery_read_checkpoint()`
@@ -326,7 +497,7 @@ FILE_CHECKPOINT correctness rules for correct shutdown
 
 1. The FILE_CHECKPOINT record must be the last record in the redo log.
    Is is checked by verifying that the checkpoint LSN entries point to the
-   end of the redo log (end LSN and FILE_CHECKPOINT LSN).
+   end of the redo log (end LSN == FILE_CHECKPOINT LSN).
 2. The FILE_CHECKPOINT LSN must be not less than any tablespace page
    modification LSN.
 
