@@ -8,6 +8,8 @@ kramdown:
     # Use existing pygments syntax highlighting css
     css_class: 'highlight'
 
+plugins:
+  - jekyll-feed
 
 # Permalinks
 permalink:        pretty
