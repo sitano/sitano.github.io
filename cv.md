@@ -21,6 +21,11 @@ _June 2021 - Present (Rust, Go, C/C++, Ruby)_
 
 Workato makes one of the best no-code automation platforms.
 
+I have developed in-house MariaDB cluster based on Galera with BYOK
+encryption-at-rest with Rust and C++, internal sandboxes for user
+unsafe code based on in-house Linux containers and gVisor. Additionally,
+I worked on optimizing memory footprint and performance of Ruby VM.
+
 Projects: internal database (Rust & MariaDB & AWS).
           it is an internal product like Airtable or NocoDB.
           in-house Linux containers from scratch for alive Ruby processes.
@@ -29,20 +34,19 @@ Projects: internal database (Rust & MariaDB & AWS).
 
 Areas:
 
-- BYOK (bring-your-own-key) data encryption at rest.
-- In-house database scalability.
-- On-premise Galera+MariaDB based data shards.
-- Containerization (lxc, containerd/libcontainer, gvisor, wasm internals) and
-  isolation, Kubernetes (internals), Linux (debugging) development and
-  derivatives
+- MariaDB+Galera clusters and shards, BYOK (bring-your-own-key) and encryption
+  at rest, in-house database scalability.
+- Security sandboxes for user unsafe code (lxc, containerd/libcontainer,
+  gvisor, wasm internals) and isolation.
 - Performance optimizations (research, patching)
 - Observability (research, development)
-- Ruby VM internals (research, patching)
+- Ruby VM, Node.JS internals (research, patching)
 - Debugging various production issues, including OOMs, deadlocks, stalls, and
   Linux kernel-related problems.
 
 Achievements:
 
+- Developed an in-house MariaDB cluster based on Galera with BYOK encryption-at-rest.
 - Developed in-house distributed serverless compute platform like in-house AWS
   Lambda or Google Function or something similar to what Fly.io is doing.
 - Optimized sandboxes bootstrap. I saved more than x2 in wall clock time,
