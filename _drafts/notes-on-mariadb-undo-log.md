@@ -9,15 +9,66 @@ desc: Scattered notes on MariaDB undo log and its internals.
 
 # Undo log
 
-Undo log in MariaDB is represented by the set of rollback segments which basically
-are the dedicated tablespaces (data files) (`undo0XXX`) including historically the
-one number Zero (0) that resides in the system tablespace starting at page 6
-(FSP_FIRST_RSEG_PAGE_NO / fsp0types.h) (at offset 6 * 16KB = 98304 or 0x18000)
-of system tablespace (`ibdata1`).
+Undo log in MariaDB/InnoDB is divided into the set of rollback segments which
+basically are the dedicated tablespaces (data files) (`undo0XXX`) including
+historically the one number Zero (0) that resides in the system tablespace
+starting at page 6 (FSP_FIRST_RSEG_PAGE_NO / fsp0types.h) (at offset 6 * 16KB =
+98304 or 0x18000) of system tablespace (`ibdata1`).
+
+DB_ROLL_PTR column in MariaDB is an internal system column that is used to
+store the rollback segment pointer for each row in a clustered index. It
+is present in every table / clustered index. This column can address up to 128
+rollback segments (TRX_SYS_N_RSEGS).
+
+Persistent tables cannot refer to temporary undo logs or vice versa. Therefore,
+MariaDB keeps two distinct sets of rollback segments: one for persistent
+tables and another for temporary tables. In this way, all 128 rollback segments
+are available for both types of tables, which could improve performance
+(see
+[124bae082bf17e9af1fc77f78bbebd019635be5c](https://github.com/MariaDB/server/commit/124bae082bf17e9af1fc77f78bbebd019635be5c)).
+
+```
+trx->rsegs.m_redo.rseg = rseg;
+
+struct trx_t {
+  ...
+  /** Rollback segments assigned to a transaction for undo logging. */
+  trx_rsegs_t  rsegs;
+  ...
+};
+
+/** Rollback segments assigned to a transaction for undo logging. */
+struct trx_rsegs_t {
+  /** undo log ptr holding reference to a rollback segment that resides in
+  system/undo tablespace used for undo logging of tables that needs
+  to be recovered on crash. */
+  trx_undo_ptr_t  m_redo;
+
+  /** undo log for temporary tables; discarded immediately after
+  transaction commit/rollback */
+  trx_temp_undo_t  m_noredo;
+};
+```
+
+Additionally, system tablespace (0) has page number 5 (`FSP_TRX_SYS_PAGE_NO
+5U`) that keeps transaction system header (TS). TS header consists of the
+deprecated `TRX_SYS_TRX_ID_STORE`, `TRX_SYS_FSEG_HEADER` - the segment header
+for the tablespace segment the trx system is created into, and `TRX_SYS_RSEGS`
+- the rollback segments slots specification registry in the format of
+(`TRX_SYS_RSEG_SPACE`, `TRX_SYS_RSEG_PAGE_NO`) 4 bytes each. See
+`trx_rseg_get_n_undo_tablespaces()`.
+
+From `trx_sys_t::reset_page(mtr_t *mtr)` we can see that page no 6
+(`FSP_FIRST_RSEG_PAGE_NO`) of the system tablespace is reserved for the first
+page of the first rollback segment in this table (`TRX_SYS` /
+`TRX_SYS_FSEG_HEADER`).
+
+The number of current rollback segments is stored in the data dictionary at
+page 7 (`FSP_DICT_HDR_PAGE_NO 7U`).
 
 # Undo tablespaces selection
 
-Undo tablespaces are selected in the round-robin fasion and are assigned to all
+Undo tablespaces are selected in the round-robin fashion and are assigned to all
 non read-only (rw) transactions. If additional (non-legacy) undo tablespaces
 are configured, the algorithm in `trx_assign_rseg_low()` tries to bypass the
 selection of the first (legacy) undo tablespace (0):
@@ -70,8 +121,11 @@ static void trx_assign_rseg_low(trx_t *trx)
 }
 ```
 
+# Normal server boot
 
-# Related functions
+For existing database Undo logs are opened during lists initialization
+(`trx_rseg_array_init()` called from `trx_lists_init_at_db_start()`) in
+`srv_start()`:
 
 ```
 dberr_t srv_start(bool create_new_db) {
@@ -132,7 +186,17 @@ dberr_t srv_start(bool create_new_db) {
 
   ...
 }
+```
 
+If they are missing, you will see the following error:
+
+```
+[ERROR] InnoDB: Failed to open the undo tablespace undo0XXX
+```
+
+# Related functions
+
+```
 /** Open the configured number of dedicated undo tablespaces.
 @param[in]  create_new_undo  whether the undo tablespaces has to be created
 @param[in,out]  mtr    mini-transaction
