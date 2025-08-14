@@ -52,9 +52,9 @@ struct trx_rsegs_t {
 
 System tablespace (0) has page number 5 (`FSP_TRX_SYS_PAGE_NO 5U`) that keeps
 transaction system header (TSH). TSH consists of the deprecated
-`TRX_SYS_TRX_ID_STORE`, `TRX_SYS_FSEG_HEADER` - the file segment header for the
-tablespace segment the trx system is created into, and `TRX_SYS_RSEGS`
-- the rollback segments slots specification registry in the format of
+`TRX_SYS_TRX_ID_STORE`, the file segment header (`TRX_SYS_FSEG_HEADER`) for the
+tablespace segment the trx system is created into, and the rollback segments
+slots specification registry (`TRX_SYS_RSEGS`) in the format of
 (`TRX_SYS_RSEG_SPACE`, `TRX_SYS_RSEG_PAGE_NO`) 4 bytes each. See
 `trx_rseg_get_n_undo_tablespaces()`. Referenced pages contain the rollback
 segment headers (`TRX_UNDO_PAGE_HDR`) and the rollback slots.
@@ -110,12 +110,6 @@ to `1024 / 2 = 512` transactions at the same time per single rollback segment.
 
 
 ```
-/* The physical size of a list base node in bytes */
-#define	FLST_BASE_NODE_SIZE	(4 + 2 * FIL_ADDR_SIZE)
-
-/* The physical size of a list node in bytes */
-#define	FLST_NODE_SIZE		(2 * FIL_ADDR_SIZE)
-
 trx0rseg.h
 
 /* Number of undo log slots in a rollback segment file copy */
@@ -188,6 +182,7 @@ pages that contain the undo log header. For more info see
 | +6: TRX_UNDO_PAGE_NODE - the file list node     |
 |     in the chain of undo log pages              |
 |     (2 * FIL_ADDR_SIZE = 2 * 6 = 12 bytes)      |
+| TRX_UNDO_SEG_HDR                                |
 | ...                                             |
 | FIL_TAILER (page footer)                        |
 +-------------------------------------------------+
@@ -204,18 +199,114 @@ pages must contain at least one undo log record.
 
 ```
 +-------------------------------------------------+
-| Page X: Undo log page header                    |
+| Page X: Segment header page                     |
 | (trx0undo.h:381)                                |
 |                                                 |
-| 0..37: FIL_HEADER (page header)                 |
-| ---                                             |
-| TRX_UNDO_PAGE_HDR = FSEG_PAGE_DATA = 38 bytes   |
-| +0: undo log page header                        |
+| ...                                             |
+| TRX_UNDO_PAGE_HDR                               |
 | TRX_UNDO_SEG_HDR                                |
 | +0: TRX_UNDO_STATE - TRX_UNDO_ACTIVE, ...       |
+| +2: TRX_UNDO_LAST_LOG - offset of the last undo --\
+|     log header on the segment header page, 0 if | |
+|     none                                        | |
+| +4: TRX_UNDO_FSEG_HEADER - header for the file  | |
+|     segment which the undo log segment occupies | |
+| +8: TRX_UNDO_PAGE_LIST - base node for the list | |
+|     of pages in the undo log segment; defined   | |
+|     only on the undo log segment's first page   | |
+|     (4 + FSEG_HEADER_SIZE = 4 + 10 = 14 bytes)  | |
+| ...                                             | |
+| TRX_UNDO_ITEM_HDR                              <--/
+| +0: TRX_UNDO_TRX_ID - transaction start id      |
+|     (0 if the undo log segment has been purged) |
+| +8: TRX_UNDO_TRX_NO - transaction end id (if the|
+|     log is in a history list, 0 if the          |
+|     transaction has not been committed)         |
+| +18: TRX_UNDO_LOG_START - offset of the first   |
+|     undo log record of this log on the header   |
+|     page; purge may remove undo log record from |
+|     the log start, and therefore this is not    |
+|     necessarily the same as this log header end |
+| +20: TRX_UNDO_XID_EXISTS - TRUE if undo log     |
+|     header includes X/Open XA transaction       |
+|     identification XID                          |
+| +21: TRX_UNDO_DICT_TRANS - TRUE if the tx       |
+|     transaction is a table create, index create,|
+|     or drop transaction: in recovery the tx     |
+|     cannot be rolled back in the usual way: a   |
+|     'rollback' rather means dropping the        |
+|     created or dropped table, if it still       |
+|     exists                                      |
+| +22: TRX_UNDO_TABLE_ID - Id of the table if the |
+|     preceding field is TRUE                     |
+| +30: TRX_UNDO_NEXT_LOG - offset of the next     |
+|     undo log header on this page, 0 if none     |
+| +32: TRX_UNDO_PREV_LOG - offset of the previous |
+|     undo log header on this page, 0 if none     |
+| +34: TRX_UNDO_HISTORY_NODE - if the log is put  |
+|     to the history list, the file list node is  |
+|     here                                        |
+| +46: TRX_UNDO_XA_FORMAT                         |
+| +50: TRX_UNDO_XA_TRID_LEN - length of the global|
+|     transaction identifier (GTRID) in bytes     |
+| +54: TRX_UNDO_XA_BQUAL_LEN - length of the      |
+|     branch qualifier (BQUAL) in bytes           |
+| +58: TRX_UNDO_XA_XID - the X/Open XA transaction|
+|     identification XID, which is a structure    |
+|     defined in `xid.h`                          |
 | ...                                             |
 | FIL_TAILER (page footer)                        |
 +-------------------------------------------------+
+
+where
+
+#define FSEG_HDR_SPACE		0	/*!< space id of the inode */
+#define FSEG_HDR_PAGE_NO	4	/*!< page number of the inode */
+#define FSEG_HDR_OFFSET		8	/*!< byte offset of the inode */
+
+#define FSEG_HEADER_SIZE	10	/*!< Length of the file system
+					header, in bytes */
+
+#define FIL_ADDR_PAGE	0U	/* first in address is the page offset */
+#define	FIL_ADDR_BYTE	4U	/* then comes 2-byte byte offset within page*/
+#define	FIL_ADDR_SIZE	6U	/* address size is 6 bytes */
+
+/* The physical size of a list base node in bytes */
+#define	FLST_BASE_NODE_SIZE	(4 + 2 * FIL_ADDR_SIZE)
+
+/* The physical size of a list node in bytes */
+#define	FLST_NODE_SIZE		(2 * FIL_ADDR_SIZE)
+```
+
+For more details on TRX_UNDO_SEG_HDR see `trx_undo_mem_create_at_db_start()`.
+
+For details on the undo log records see `trx0rec.{h, cc}`,
+`trx_undo_rec_get_undo_no()+trx_undo_page_get_last_rec()` and
+in example `trx_undo_page_report_insert()` or `trx_undo_page_report_modify()`.
+
+```
+Undo log record parts:
+
+0..1: pointer to the next undo log record
+2..2: type of the undo log record, one of:
+      #define	TRX_UNDO_INSERT_REC	11	/* fresh insert into clustered index */
+      #define	TRX_UNDO_UPD_EXIST_REC	12	/* update of a non-delete-marked record */
+      ...
+u64_varint: trx->undo_no - /*!< next undo log record number to
+                                assign; since the undo log is
+                                private for a transaction, this
+                                is a simple ascending sequence
+                                with no gaps; thus it represents
+                                the number of modified/inserted
+                                rows in a transaction */
+u64_varint: table->id
+1 byte: info bits
+u64_varint: trx->id - /*!< transaction id of the
+                           transaction that created this
+                           undo log record */
+u64_varint: field->DB_ROLL_PTR - /*!< rollback segment pointer
+                                      for the row */
+...
 ```
 
 # Undo tablespaces selection
