@@ -9,45 +9,60 @@ desc: Scattered notes on MariaDB undo log and its internals.
 
 # Undo log
 
-Undo log in MariaDB/InnoDB is divided into a set of rollback segments which
-basically are the dedicated tablespaces (data files) (`undo0XXX`) including
+Undo log in MariaDB/InnoDB is divided into a set of rollback segments (128)
+which reside in dedicated tablespaces (data files) (`undo0XXX`) including
 historically the one number Zero (0) that resides in the system tablespace
 starting at page 6 (FSP_FIRST_RSEG_PAGE_NO / fsp0types.h) (at offset 6 * 16KB =
 98304 or 0x18000) of system tablespace (`ibdata1`).
 
-DB_ROLL_PTR column in MariaDB is an internal system column that is used to
-store the rollback segment pointer for each row in a clustered index. It is
-used along with the TRX_ID internal column to track tuples status. DB_ROLL_PTR
-column can address up to 128 rollback segments (TRX_SYS_N_RSEGS).
+```
++----------+     +---------+     +---------+     +---------+
+| Rollback | --> | Undo    | --> | Undo    | --> | TX      |
+| Segments |     | Slots   |     | Records |     | lists   |
++----------+     +---------+     +---------+     +---------+
+```
 
-Persistent tables cannot refer to temporary undo logs or vice versa. Therefore,
-MariaDB keeps two distinct sets of rollback segments: one for persistent
-tables and another for temporary tables. In this way, all 128 rollback segments
-are available for both types of tables, which could improve performance
-(see
-[124bae082bf17e9af1fc77f78bbebd019635be5c](https://github.com/MariaDB/server/commit/124bae082bf17e9af1fc77f78bbebd019635be5c)).
+Rolback segments are specified in the segments directory at page 5 of the system
+tablespace (`FSP_TRX_SYS_PAGE_NO` / fsp0types.h). The segments themselves are
+divided into slots (1024) that point to the corresponding undo log pages. Those
+undo log pages contain the undo log records which in turn contain the information
+to rollback a transaction or to reconstruct the state of a row at a certain
+point in time (MVCC).
 
 ```
-trx->rsegs.m_redo.rseg = rseg;
++---------+
+| ibdata1 |
++---------+
+| ...     |
++---------+
+| Page 5  | <- Transaction system header (TSH) (rollback segments registry)
++---------+                                        | |
+| Page 6  | <- First rollback segment first page <-/ |
++---------+                                          | segment pointer
+| ...     |                                          |
++---------+                                          |
+                                                     |
++---------+                                          |
+| undo001 |                                          |
++---------+                                          |
+| ...     |                                          |
++---------+                                          v
+| Page X  | <- A page of a rollback segment with slots
++---------+    |
+| ...     |    | slot pointer
++---------+    v
+| Page Y  | <- An undo log page that points to undo log records
++---------+
+| ...     |
++---------+
+| Page Z  | <- An undo log page with records
++---------+
 
-struct trx_t {
-  ...
-  /** Rollback segments assigned to a transaction for undo logging. */
-  trx_rsegs_t  rsegs;
-  ...
-};
+...
 
-/** Rollback segments assigned to a transaction for undo logging. */
-struct trx_rsegs_t {
-  /** undo log ptr holding reference to a rollback segment that resides in
-  system/undo tablespace used for undo logging of tables that needs
-  to be recovered on crash. */
-  trx_undo_ptr_t  m_redo;
-
-  /** undo log for temporary tables; discarded immediately after
-  transaction commit/rollback */
-  trx_temp_undo_t  m_noredo;
-};
++---------+
+| undo126 |
++---------+
 ```
 
 System tablespace (0) has page number 5 (`FSP_TRX_SYS_PAGE_NO 5U`) that keeps
@@ -76,21 +91,21 @@ segment headers (`TRX_UNDO_PAGE_HDR`) and the rollback slots.
 |     - FSEG_HDR_OFFSET		8	/*!< byte offset of the inode */
 | +18: TRX_SYS_RSEGS (rollback segments spec slots|
 |+-----------------------------------------------+|
-|| Slot 0                                        ||
-|| +0: TRX_SYS_RSEG_SPACE                        ||
-|| +4: TRX_SYS_RSEG_PAGE_NO                      ||
-|+-----------------------------------------------+|
-|| Slot ...                                      ||
-|+-----------------------------------------------+|
-|| Slot 126                                      ||
-|+-----------------------------------------------+|
-|                                                 |
-| TRX_SYS_WSREP_XID_*                             |
-| TRX_SYS_MYSQL_*                                 |
-| TRX_SYS_DOUBLEWRITE_*                           |
-| FIL_TAILER (page footer)                        |
-+-------------------------------------------------+
-| Page 6: First rollback segment first page       |
+|| Rollback Segment 0                            ||
+|| +0: TRX_SYS_RSEG_SPACE = 0                    ||
+|| +4: TRX_SYS_RSEG_PAGE_NO = 6                  ||--\
+|+-----------------------------------------------+|  |
+|| Rollback Segment ...                          ||  |
+|+-----------------------------------------------+|  |
+|| Rollback Segment 126                          ||  |
+|+-----------------------------------------------+|  |
+|                                                 |  |
+| TRX_SYS_WSREP_XID_*                             |  |
+| TRX_SYS_MYSQL_*                                 |  |
+| TRX_SYS_DOUBLEWRITE_*                           |  |
+| FIL_TAILER (page footer)                        |  |
++-------------------------------------------------+  |
+| Page 6: First rollback segment first page       |<-/
 |                                                 |
 +-------------------------------------------------+
 | ...                                             |
@@ -119,7 +134,7 @@ trx0rseg.h
 #define TRX_RSEG_MAX_N_TRXS	(TRX_RSEG_N_SLOTS / 2)
 
 +-------------------------------------------------+
-| Rollback Segment (undo0XXX)                     |
+| Undo Tablespace (undoXXX)                       |
 | ...                                             |
 +-------------------------------------------------+
 | Page X: Transaction rollback segment header     |
@@ -158,13 +173,13 @@ trx0rseg.h
 +-------------------------------------------------+
 ```
 
-Transaction rollback segment header slots point to the corresponding undo log
-pages that contain the undo log header. For more info see
+Transaction rollback slots point to the corresponding undo log pages that
+contain the undo log page header and undo segment header. For more info see
 `trx_undo_lists_init()` and `trx_undo_mem_create_at_db_start()`.
 
 ```
 +-------------------------------------------------+
-| Page X: Undo log page header                    |
+| Page Y: Undo log page header                    |
 | (trx0undo.h:381)                                |
 |                                                 |
 | 0..37: FIL_HEADER (page header)                 |
@@ -188,7 +203,7 @@ pages that contain the undo log header. For more info see
 +-------------------------------------------------+
 ```
 
-An update undo segment with just one page can be reused. An update undo log
+An update undo segment with just one page can be reused. An update undo
 segment may contain several undo logs on its first page if the undo logs took
 so little space that the segment could be cached and reused. All the undo log
 headers are then on the first page, and the last one owns the undo log records
@@ -199,7 +214,7 @@ pages must contain at least one undo log record.
 
 ```
 +-------------------------------------------------+
-| Page X: Segment header page                     |
+| Page Y: Update segment header                   |
 | (trx0undo.h:381)                                |
 |                                                 |
 | ...                                             |
@@ -311,10 +326,10 @@ u64_varint: field->DB_ROLL_PTR - /*!< rollback segment pointer
 
 # Undo tablespaces selection
 
-Undo tablespaces are selected in the round-robin fashion and are assigned to all
-non read-only (rw) transactions. If additional (non-legacy) undo tablespaces
-are configured, the algorithm in `trx_assign_rseg_low()` tries to bypass the
-selection of the first (legacy) undo tablespace (0):
+Rollback segments (128) are selected in the round-robin fashion and are assigned to
+all non read-only (rw) transactions. If additional (non-legacy) undo
+tablespaces are configured, the algorithm in `trx_assign_rseg_low()` tries to
+bypass the selection of the first (legacy) undo tablespace (0):
 
 ```
 trx_start_low() | trx_set_rw_mode() ->
@@ -472,6 +487,45 @@ If they are missing, you will see the following error:
 
 ```
 [ERROR] InnoDB: Failed to open the undo tablespace undo0XXX
+```
+
+# Undo column
+
+DB_ROLL_PTR column in MariaDB is an internal system column that is used to
+store the rollback segment pointer for each row in a clustered index. It is
+used along with the TRX_ID internal column to track tuples status. DB_ROLL_PTR
+column can address up to 128 rollback segments (TRX_SYS_N_RSEGS).
+
+# Temporary tables
+
+Persistent tables cannot refer to temporary undo logs or vice versa. Therefore,
+MariaDB keeps two distinct sets of rollback segments: one for persistent
+tables and another for temporary tables. In this way, all 128 rollback segments
+are available for both types of tables, which could improve performance
+(see
+[124bae082bf17e9af1fc77f78bbebd019635be5c](https://github.com/MariaDB/server/commit/124bae082bf17e9af1fc77f78bbebd019635be5c)).
+
+```
+trx->rsegs.m_redo.rseg = rseg;
+
+struct trx_t {
+  ...
+  /** Rollback segments assigned to a transaction for undo logging. */
+  trx_rsegs_t  rsegs;
+  ...
+};
+
+/** Rollback segments assigned to a transaction for undo logging. */
+struct trx_rsegs_t {
+  /** undo log ptr holding reference to a rollback segment that resides in
+  system/undo tablespace used for undo logging of tables that needs
+  to be recovered on crash. */
+  trx_undo_ptr_t  m_redo;
+
+  /** undo log for temporary tables; discarded immediately after
+  transaction commit/rollback */
+  trx_temp_undo_t  m_noredo;
+};
 ```
 
 # Related functions
