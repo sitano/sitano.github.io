@@ -160,15 +160,25 @@ trx0rseg.h
 |+-----------------------------------------------+|
 || ...                                           ||
 |+-----------------------------------------------+|
-|| Slot (TRX_RSEG_MAX_N_TRXS / TRX_RSEG_SLOT_SIZE)|
+|| Slot 1023 (1024 slots for 16KB page)          ||
+|| upto (TRX_RSEG_MAX_N_TRXS / TRX_RSEG_SLOT_SIZE)|
 |+-----------------------------------------------+|
-| +: TRX_RSEG_MAX_TRX_ID                          |
+| for 16KB page +8+16+10+1024*4 = 4130            |
+| +0: TRX_RSEG_MAX_TRX_ID                         |
 |     Maximum transaction ID                      |
-| +: TRX_RSEG_BINLOG_OFFSET (8 bytes)             |
+| +8: TRX_RSEG_BINLOG_OFFSET (8 bytes)            |
 |     8 bytes offset within the binlog file       |
-| +: TRX_RSEG_BINLOG_NAME (512 bytes)             |
+| +16:TRX_RSEG_BINLOG_NAME (512 bytes)            |
 |     MySQL log file name, including terminating  |
 |     NUL (valid only if TRX_RSEG_FORMAT is 0)    |
+|     512 bytes buffer                            |
+| +528: WSREP_XID_INFO                            |
+|   +0: WSREP_XID_FORMAT                          |
+|   +4: WSREP_XID_GTRID_LEN                       |
+|   +8: WSREP_XID_BQUAL_LEN                       |
+|   +12:WSREP_XID_DATA                            |
+|   +12+XIDDATESIZE(128)                          |
+|                                                 |
 | FIL_TAILER (page footer)                        |
 +-------------------------------------------------+
 ```
